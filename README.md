@@ -1,86 +1,117 @@
-# Lebensmittel: список продуктів (Android)
+# Lebensmittel — Shopping List
 
-Список покупок на кожен день з календарем, пошуком у базі Open Food Facts, калорійністю, сканером штрихкодів і передачею списку через посилання.
+An Android app for everyday grocery shopping in Germany. Lists are tied to days in a calendar.
+Products are looked up in Open Food Facts and its sister databases: food, personal care, household goods and pet food.
 
-## Як запустити
+## Features
 
-1. Встановіть **Android Studio** (https://developer.android.com/studio). Її можна поставити на диск E.
-2. Android Studio → **Open** → виберіть папку `E:\project\Lebensmittel`.
-3. Зачекайте, поки Gradle завантажить бібліотеки (перший раз 5–15 хв, внизу видно прогрес). Якщо студія запропонує оновити Gradle або AGP, можна погодитися, а можна натиснути «не зараз».
-4. Підключіть телефон:
-   - Налаштування → Про телефон → 7 разів натисніть «Номер збірки», щоб увімкнути режим розробника;
-   - Налаштування → Для розробників → увімкніть **Налагодження USB**;
-   - підключіть кабель і на телефоні дозвольте налагодження.
-5. Угорі в Android Studio виберіть свій телефон і натисніть зелений ▶ **Run**.
+- **Calendar of lists**: a list for every day, "bought" check marks, copy a list from another day
+- **Smart search** in Ukrainian, Russian, English or German ("хліб", "хлеб", "bread" → Brot), by product name only
+- **Barcode scanner** without camera permission (Google Code Scanner)
+- **Supermarket filter**: Edeka, Lidl, Rewe, Aldi and more, including the chains' own brands
+- **Calories** in the list and a **"Nutrition" tab**: protein, fat, carbohydrates, vitamins, allergens, additives, Nutri-Score, NOVA
+- **Prices**: the last price is remembered; daily total and a **spending report** for any period
+- **Reminders** with push notifications for a chosen day and time
+- **Share a list** via a link without a server: the whole list is encoded in the link itself
+- **Personalisation**: light/dark theme, background picture from the gallery with automatic text colour, custom colour for product names (RGB)
+- **5 UI languages**: Ukrainian, English, German, Russian, Arabic (with right-to-left layout)
 
-Якщо збірка завершиться помилкою, скопіюйте текст помилки з вікна **Build** і надішліть його Claude.
+## Tech stack
 
-Готовий APK для встановлення без кабелю: **Build → Build App Bundle(s) / APK(s) → Build APK(s)**. Файл з'явиться в `app\build\outputs\apk\debug\app-debug.apk`. Його можна скинути на телефон і встановити.
+Kotlin · Jetpack Compose · Material 3 · Coil · ML Kit Code Scanner · AlarmManager · Open Food Facts API.
+All data stays on the phone; no account needed.
 
-## Що вміє додаток
+## Data
 
-| Функція | Як це працює |
+Product information: [Open Food Facts](https://world.openfoodfacts.org), licensed under ODbL.
+
+---
+
+## Getting started
+
+1. Install **Android Studio** (https://developer.android.com/studio).
+2. Android Studio → **Open** → select the project folder.
+3. Wait until Gradle downloads the libraries (5–15 minutes the first time; progress is shown at the bottom). If Android Studio offers to upgrade Gradle or AGP, you can accept or skip it.
+4. Connect your phone:
+   - Settings → About phone → tap "Build number" 7 times to enable developer mode;
+   - Settings → Developer options → enable **USB debugging**;
+   - connect the cable and allow debugging on the phone.
+5. Select your phone at the top of Android Studio and press the green ▶ **Run**.
+
+If the build fails, the error message is shown in the **Build** window.
+
+To get an APK you can install without a cable: **Build → Build App Bundle(s) / APK(s) → Build APK(s)**. The file appears in `app/build/outputs/apk/debug/app-debug.apk`; copy it to the phone and install it.
+
+## What the app does
+
+| Feature | How it works |
 |---|---|
-| Календар | Дні зі списком підсвічені, у клітинці видно, скільки ще треба купити (✓ = все куплено) |
-| Список на день | Натискання на рядок ставить галочку «куплено», куплене опускається вниз |
-| Додавання | Вводите назву німецькою **або українською**. Додаток показує: ваші продукти, які ви вже вводили; словник (хліб → Brot); товари з Open Food Facts |
-| «Хліб буває різний» | Натисніть на «Brot» у словнику, і з'являться конкретні товари з бази з марками та калорійністю |
-| Без вибору | «Додати просто «Brot»» або кнопка «Просто так» додає продукт без конкретної марки |
-| Кількість | шт / г / кг / мл / л / уп., кнопки − і + |
-| Калорії | ккал на 100 г для кожного товару, плюс загальна сума, якщо відома вага. Внизу список показує «Разом ≈ … ккал» |
-| Штрихкод | Кнопка сканера вгорі на екрані додавання (сканер Google, дозвіл на камеру не потрібен) |
-| Магазин у пошуку | Після пошуку з'являється меню «Магазин ▾» з тими супермаркетами, які трапились у знайдених товарах (з кількістю). Якщо вибрати, наприклад, Edeka, залишаться лише товари Edeka, і додаток окремо дошукає товари з цією позначкою. Можна одразу ввести «Milch Edeka» або «молоко едека». Враховуються і власні марки мереж (Milbona = Lidl, ja! = Rewe, Gut & Günstig = Edeka, Balea = dm…). Вибраний магазин зберігається для наступних пошуків |
-| Мова | Налаштування → «Мова»: українська, English, Deutsch, русский, العربية або як у системі. Для арабської інтерфейс дзеркалиться (справа наліво). Назви товарів залишаються німецькими, бо так вони записані в базі. Шукати можна українською, російською, англійською або німецькою: «хліб», «хлеб», «bread» → Brot |
-| Вкладки внизу | Списки · Склад · Витрати · Нагадування · Налаштування. «Склад», «Витрати» і «Нагадування» можна вимкнути в Налаштування → «Вкладки» |
-| Нагадування | Вкладка «Нагадування»: виберіть день, натисніть «+», напишіть текст і вкажіть час. У цей час прийде сповіщення, а натискання на нього відкриє нагадування. Кожне можна тимчасово вимкнути перемикачем або видалити. Після перезавантаження телефона нагадування плануються знову |
-| Склад продукту | Вкладка «Склад»: відскануйте штрихкод або введіть цифри. Показує енергію (ккал і кДж), жири, насичені жири, вуглеводи, цукри, волокна, білки, сіль, натрій, вітаміни й мінерали, тобто все, що є в базі, на 100 г і на порцію. А також Nutri-Score, NOVA, Eco-Score, склад, алергени, можливі сліди, добавки (E-номери) і позначки (Bio, веганське…). Кнопка «Додати в список на сьогодні» |
-| Колір тексту на картинці | Якщо на фоні стоїть картинка, додаток сам визначає її яскравість: на темній картинці написи світлі, на світлій темні |
-| Налаштування | Меню ⋮ на головному екрані → «Налаштування»: тема (світла за замовчуванням / темна / як у системі), картинка на фон, колір назв продуктів (готові кольори, повзунки R/G/B або код #RRGGBB), що показувати у списку: фото, фірму і вагу, калорійність |
-| Копіювати з іншого дня | На екрані дня: меню ⋮ → «Скопіювати з іншого дня» → вибрати, наприклад, минулий вівторок |
-| Поділитися | Кнопка «Поділитися» надсилає текст списку і посилання `lebensmittel://import?d=…` |
-| Ціна | Поле «Ціна разом, €» у вікні кількості (необов'язкове). Наступного разу ціна підставляється сама за останньою ціною і перераховується під кількість. Змінити ціну можна кнопкою ✎ |
-| Сума за день | Внизу списку: «Сума: … · куплено на …» |
-| Витрати | Кнопка € на головному екрані (або меню ⋮ → «Витрати за період»): період від–до, швидкі кнопки (тиждень, місяць, минулий місяць, 30 днів, рік), сума, середнє за день, графік по днях, на що пішло найбільше. Перемикач «Лише куплене» рахує тільки товари з галочкою |
-| Фон | Налаштування → «Картинка на фон з галереї…» → вибрати картинку з галереї (дозволи не потрібні). Повзунок затемнення допомагає зробити текст читабельним. «Прибрати фон» повертає звичайний вигляд |
+| Calendar | Days with a list are highlighted; each cell shows how many items are still to buy (✓ = everything bought) |
+| Day list | Tap the **checkbox** to mark an item as bought (tapping the row itself does nothing, to avoid accidental taps); bought items move to the bottom |
+| Adding | Type a name in German, Ukrainian, Russian or English. The app shows: products you entered before; the dictionary (хліб → Brot); products from the databases |
+| "Bread comes in many kinds" | Tap "Brot" in the dictionary to see specific products from the database with brands and calories |
+| Without choosing | "Just add “Brot”" or the "Just this" button adds a generic product without a brand |
+| Quantity | pcs / g / kg / ml / l / pack, with − and + buttons |
+| Calories | kcal per 100 g for every product plus the total when the weight is known. The bottom of the list shows "Total ≈ … kcal" |
+| Barcode | Scanner button at the top of the add screen (Google scanner, no camera permission needed) |
+| Name-only search | Only products whose **name** contains the searched words are shown ("Milch" finds "Vollmilch 3,5 %", but not a chocolate that only has milk in its ingredients) |
+| Store in search | After a search a "Store ▾" menu lists the supermarkets found in the results (with counts). Picking e.g. Edeka keeps only Edeka products and additionally searches for products tagged with that store. You can also type "Milch Edeka" directly. Chains' own brands are recognised too (Milbona = Lidl, ja! = Rewe, Gut & Günstig = Edeka, Balea = dm…). The chosen store is kept for the next searches |
+| Language | Settings → "Language": Ukrainian, English, German, Russian, Arabic or system language. Arabic uses a right-to-left layout. Product names stay German because that is how they are stored in the database |
+| Bottom tabs | Lists · Nutrition · Spending · Reminders. Nutrition, Spending and Reminders can be hidden in Settings → "Tabs" |
+| Settings | ⚙ icon at the top of the main screen (or ⋮ → "Settings"): language, theme (light by default / dark / system), background picture, product name colour (preset colours, R/G/B sliders or #RRGGBB code), tabs, and what to show in the list: photos, brand and size, calories |
+| Reminders | "Reminders" tab: pick a day, tap "+", enter a text and a time. A notification arrives at that time; tapping it opens the reminder. Each reminder can be switched off or deleted. Reminders are re-scheduled after a phone restart |
+| Nutrition | "Nutrition" tab: scan a barcode or type the digits. Shows energy (kcal and kJ), fat, saturates, carbohydrates, sugars, fibre, protein, salt, sodium, vitamins and minerals — everything in the database — per 100 g and per serving, plus Nutri-Score, NOVA, Eco-Score, ingredients, allergens, possible traces, additives (E numbers) and labels (organic, vegan…). Button "Add to today's list" |
+| Text colour on a picture | With a background picture, the app measures its brightness: light text on dark pictures, dark text on light ones |
+| Copy from another day | On a day screen: ⋮ → "Copy from another day" → pick e.g. last Tuesday |
+| Share | The "Share" button sends the list as text plus a `lebensmittel://import?d=…` link |
+| Price | Field "Total price, €" in the quantity dialog (optional). Next time the price is filled in automatically from the last price and scaled to the quantity (same unit as last time). Edit it with the ✎ button |
+| Daily total | At the bottom of the list: "Total: … · bought: …" — shown only when **every** item of the day has a price |
+| Spending | "Spending" tab: date range from–to, quick buttons (this week, this month, last month, 30 days, this year), total, daily average, chart by day, biggest expenses. "Only bought" counts only checked items |
+| Background | Settings → "Background picture from gallery…" → choose a picture (no permissions needed). A dimming slider keeps text readable. "Remove background" restores the plain look |
 
-### Як інша людина отримує список
+### How someone else receives a list
 
-Увесь список закодований прямо в посиланні, тому сервер не потрібен. Отримувач (у нього має бути встановлений цей самий додаток) може:
+The whole list is encoded in the link, so no server is needed. The recipient (with the same app installed) can:
 
-1. **натиснути на посилання**, якщо месенджер робить його клікабельним; або
-2. у WhatsApp/Telegram **утримати повідомлення → Поділитися → Lebensmittel**; або
-3. **скопіювати повідомлення** і в додатку натиснути кнопку 📋 «Вставити список» на головному екрані.
+1. **tap the link**, if the messenger makes it clickable; or
+2. in WhatsApp/Telegram **long-press the message → Share → Lebensmittel**; or
+3. **copy the message** and tap 📋 "Paste list" on the main screen of the app.
 
-Далі додаток покаже, що в списку, і запитає, на який день його додати.
+The app then shows what is in the list and asks which day to add it to.
 
-> Деякі месенджери (WhatsApp, Telegram) не роблять клікабельними посилання виду `lebensmittel://`. Тому працюють варіанти 2 і 3. Щоб посилання завжди були клікабельними, потрібна власна https-адреса (наприклад безкоштовний GitHub Pages). Це можна додати пізніше.
+> Some messengers (WhatsApp, Telegram) don't make `lebensmittel://` links clickable, so options 2 and 3 are the reliable ones. Always-clickable links would need an own https address (e.g. a free GitHub Pages site).
 
-## Будова проєкту
+## Project structure
 
 ```
 app/src/main/
-  assets/dictionary.txt        словник: Німецька;Українська;синоніми;Російська;Англійська, ~280 продуктів, можна доповнювати
+  assets/dictionary.txt        dictionary: German;Ukrainian;synonyms;Russian;English, ~280 products, easy to extend
   java/de/mef/lebensmittel/
-    MainActivity.kt            запуск, прийом посилань і «Поділитися»
-    AppViewModel.kt            уся логіка екранів
-    Store.kt                   збереження даних (файл data.json у пам'яті телефону)
-    OffApi.kt                  запити до Open Food Facts (пошук і штрихкод)
-    Dictionary.kt, Txt.kt      пошук українською / німецькою
-    Kcal.kt                    розрахунок калорій
-    ShareCodec.kt              кодування списку в посилання
-    ui/                        екрани: календар, день, додавання, діалоги
+    MainActivity.kt            start-up, incoming links and "Share"
+    AppViewModel.kt            screen logic
+    Store.kt                   data storage (data.json in the app's private storage)
+    OffApi.kt                  Open Food Facts requests (search and barcode)
+    Nutrition.kt               full nutrition facts of a product
+    Stores.kt                  supermarkets and the chains' own brands
+    Reminders.kt               reminder notifications (alarms, boot receiver)
+    I18n.kt                    all texts in 5 languages
+    Dictionary.kt, Txt.kt      multilingual search
+    Kcal.kt                    calorie calculation
+    Spending.kt                spending report
+    ShareCodec.kt              encoding a list into a link
+    ui/                        screens: calendar, day, add, nutrition, spending, reminders, settings, dialogs
 ```
 
-## Дані
+## Data sources
 
-- Товари і калорійність: [Open Food Facts](https://world.openfoodfacts.org), ліцензія ODbL. Пошук обмежений товарами, що продаються в Німеччині.
-- Гігієна, побутове і корм для тварин: [Open Beauty Facts](https://world.openbeautyfacts.org), [Open Products Facts](https://world.openproductsfacts.org), [Open Pet Food Facts](https://world.openpetfoodfacts.org), з тим самим API. Пошук і сканер перевіряють усі чотири бази. Такі товари мають позначку «гігієна», «побутове» або «для тварин». Калорійності для них немає. Ці бази менші за продуктову, тому деяких товарів там може не бути.
-- Open Food Facts дозволяє близько 10 пошуків на хвилину. Для звичайного користування цього вистачає. Якщо ліміт вичерпано, додаток попросить зачекати.
-- Усі ваші списки зберігаються тільки на телефоні.
+- Food and calories: [Open Food Facts](https://world.openfoodfacts.org), ODbL licence. Search is limited to products sold in Germany.
+- Personal care, household and pet food: [Open Beauty Facts](https://world.openbeautyfacts.org), [Open Products Facts](https://world.openproductsfacts.org), [Open Pet Food Facts](https://world.openpetfoodfacts.org), with the same API. Search and the scanner check all four databases. Such products are tagged "hygiene", "household" or "pets" and have no calories. These databases are smaller than the food one, so some products may be missing.
+- Open Food Facts allows about 10 searches per minute. That is plenty for normal use; if the limit is reached, the app asks you to wait a moment.
+- All your lists are stored only on the phone.
 
-## Нагадування на Xiaomi / Redmi / POCO
+## Reminders on Xiaomi / Redmi / POCO
 
-MIUI і HyperOS агресивно «присипляють» додатки. Щоб нагадування приходили вчасно:
-1. Налаштування → Додатки → Lebensmittel → **Автозапуск**: увімкнути.
-2. Там само → **Контроль активності** (економія батареї): «Без обмежень».
-3. Сповіщення для Lebensmittel мають бути дозволені (додаток попросить сам при першому нагадуванні).
+MIUI and HyperOS put apps to sleep aggressively. For reminders to arrive on time:
+1. Settings → Apps → Lebensmittel → **Autostart**: on.
+2. Same place → **Battery saver**: "No restrictions".
+3. Notifications for Lebensmittel must be allowed (the app asks for this with the first reminder).

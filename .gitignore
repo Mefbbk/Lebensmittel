@@ -1,10 +1,22 @@
+# Android Studio / Gradle
 *.iml
 .gradle/
+.kotlin/
 /local.properties
 /.idea/
 .DS_Store
 /build/
 /app/build/
+/app/release/
 /captures/
 .externalNativeBuild/
 .cxx/
+
+# signing keys and passwords: never upload
+*.jks
+*.keystore
+keystore.properties
+
+# built apps
+*.apk
+*.aab
