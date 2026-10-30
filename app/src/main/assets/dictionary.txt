@@ -1,0 +1,290 @@
+# Німецька;Українська;інші українські назви (|);Російська (|);Англійська (|)
+# Можна вільно доповнювати. Рядки з # ігноруються.
+# --- Хліб і випічка ---
+Brot;хліб;хлібина|батон;хлеб|батон;bread
+Vollkornbrot;цільнозерновий хліб;хліб цільнозерновий;цельнозерновой хлеб;wholemeal bread|whole grain bread
+Roggenbrot;житній хліб;чорний хліб|хліб житній;ржаной хлеб|черный хлеб;rye bread
+Mischbrot;пшенично-житній хліб;сірий хліб;пшенично-ржаной хлеб|серый хлеб;mixed bread
+Toastbrot;тостовий хліб;хліб для тостів|тост;тостовый хлеб|хлеб для тостов;toast bread|sandwich bread
+Weißbrot;білий хліб;хліб білий;белый хлеб;white bread
+Brötchen;булочки;булочка|брьотхен|semmel;булочки|булочка;bread rolls|rolls|buns
+Baguette;багет;;багет;baguette
+Laugenbrezel;брецель;крендель|brezel;брецель|крендель;pretzel
+Croissant;круасан;;круассан;croissant
+Knäckebrot;хлібці;хрусткі хлібці;хлебцы;crispbread
+Zwieback;сухарі;сухарики;сухари;rusks
+Paniermehl;панірувальні сухарі;паніровка;панировочные сухари;breadcrumbs
+Kuchen;пиріг;кекс;пирог|кекс;cake
+Torte;торт;;торт;gateau|layer cake
+Kekse;печиво;;печенье;biscuits|cookies
+Waffeln;вафлі;;вафли;waffles|wafers
+Tortilla Wraps;тортильї;лаваш|wraps;тортильи|лаваш;tortilla wraps|wraps
+# --- Молочне ---
+Milch;молоко;;молоко;milk
+H-Milch;ультрапастеризоване молоко;молоко довгого зберігання;ультрапастеризованное молоко;uht milk|long-life milk
+Buttermilch;маслянка;;пахта;buttermilk
+Butter;вершкове масло;масло;сливочное масло|масло;butter
+Margarine;маргарин;;маргарин;margarine
+Sahne;вершки;;сливки;cream
+Schlagsahne;вершки для збивання;збиті вершки;сливки для взбивания|взбитые сливки;whipping cream
+Saure Sahne;сметана;;сметана;sour cream
+Schmand;сметана густа;;густая сметана;thick sour cream
+Crème fraîche;крем-фреш;;крем-фреш;creme fraiche
+Joghurt;йогурт;;йогурт;yogurt|yoghurt
+Naturjoghurt;натуральний йогурт;йогурт без добавок;натуральный йогурт;plain yogurt|natural yogurt
+Griechischer Joghurt;грецький йогурт;;греческий йогурт;greek yogurt
+Kefir;кефір;;кефир;kefir
+Quark;сир кисломолочний;творог|кисломолочний сир|сир;творог|сыр творожный;quark|curd cheese
+Hüttenkäse;зернистий сир;;зерненый творог|зернистый творог;cottage cheese
+Käse;сир твердий;сир;сыр;cheese
+Gouda;гауда;сир гауда;гауда;gouda
+Emmentaler;емменталь;;эмменталь;emmental
+Mozzarella;моцарела;;моцарелла;mozzarella
+Parmesan;пармезан;;пармезан;parmesan
+Feta;фета;бринза;фета|брынза;feta
+Frischkäse;вершковий сир;сир філадельфія;сливочный сыр|творожный сыр;cream cheese
+Schmelzkäse;плавлений сир;;плавленый сыр;processed cheese
+Kondensmilch;згущене молоко;згущенка;сгущенное молоко|сгущенка;condensed milk
+Pudding;пудинг;;пудинг;pudding
+Eier;яйця;яйце;яйца|яйцо;eggs|egg
+Hafermilch;вівсяне молоко;;овсяное молоко;oat milk
+Sojamilch;соєве молоко;;соевое молоко;soy milk
+# --- М'ясо і риба ---
+Hähnchenbrust;куряче філе;курячі грудки|куряча грудка;куриное филе|куриная грудка;chicken breast
+Hähnchenschenkel;курячі стегна;стегенця|окорочка;куриные бедра|окорочка;chicken thighs|chicken legs
+Hähnchenflügel;курячі крильця;крильця;куриные крылышки|крылышки;chicken wings
+Hähnchen;курка;курятина|кура;курица;chicken
+Putenbrust;філе індички;індичка;филе индейки|индейка;turkey breast|turkey
+Hackfleisch;фарш;м'ясний фарш;фарш;minced meat|ground meat
+Rinderhackfleisch;яловичий фарш;;говяжий фарш;minced beef|ground beef
+Schweinefleisch;свинина;;свинина;pork
+Rindfleisch;яловичина;;говядина;beef
+Schweinenacken;свиняча шийка;шийка;свиная шея|шейка;pork neck
+Lammfleisch;баранина;;баранина;lamb
+Ente;качка;;утка;duck
+Schnitzel;шніцель;відбивна;шницель|отбивная;schnitzel|cutlet
+Speck;сало;бекон;сало|бекон;lard|speck
+Bacon;бекон;;бекон;bacon
+Wurst;ковбаса;;колбаса;sausage|cold cuts
+Salami;салямі;;салями;salami
+Schinken;шинка;;ветчина;ham
+Würstchen;сосиски;сосиска|wiener;сосиски|сосиска;frankfurters|hot dogs
+Bratwurst;смажені ковбаски;ковбаски для гриля;колбаски для гриля|жареные колбаски;bratwurst|grill sausages
+Leberwurst;печінкова ковбаса;;ливерная колбаса;liver sausage
+Leber;печінка;;печень;liver
+Lachs;лосось;сьомга;лосось|семга;salmon
+Räucherlachs;копчений лосось;;копченый лосось;smoked salmon
+Thunfisch;тунець;;тунец;tuna
+Hering;оселедець;;сельдь|селедка;herring
+Makrele;скумбрія;;скумбрия;mackerel
+Forelle;форель;;форель;trout
+Kabeljau;тріска;;треска;cod
+Fischstäbchen;рибні палички;;рыбные палочки;fish fingers|fish sticks
+Garnelen;креветки;;креветки;prawns|shrimps
+Kaviar;ікра;;икра;caviar
+# --- Овочі і зелень ---
+Kartoffeln;картопля;картоплі;картофель|картошка;potatoes|potato
+Süßkartoffeln;батат;солодка картопля;батат|сладкий картофель;sweet potatoes
+Zwiebeln;цибуля;цибулина;лук|луковица;onions|onion
+Rote Zwiebeln;червона цибуля;;красный лук;red onions
+Frühlingszwiebeln;зелена цибуля;;зеленый лук;spring onions|green onions
+Lauch;цибуля-порей;порей;лук-порей|порей;leek
+Knoblauch;часник;;чеснок;garlic
+Karotten;морква;моркву|möhren;морковь|морковка;carrots|carrot
+Tomaten;помідори;помідор|томати;помидоры|томаты|помидор;tomatoes|tomato
+Kirschtomaten;помідори черрі;черрі;помидоры черри|черри;cherry tomatoes
+Gurken;огірки;огірок;огурцы|огурец;cucumbers|cucumber
+Paprika;болгарський перець;перець солодкий;болгарский перец|сладкий перец;bell pepper|peppers
+Chili;перець чилі;гострий перець;перец чили|острый перец;chili|chilli
+Weißkohl;капуста;білокачанна капуста;капуста|белокочанная капуста;cabbage|white cabbage
+Rotkohl;червонокачанна капуста;;краснокочанная капуста;red cabbage
+Blumenkohl;цвітна капуста;;цветная капуста;cauliflower
+Brokkoli;броколі;;брокколи;broccoli
+Rosenkohl;брюссельська капуста;;брюссельская капуста;brussels sprouts
+Zucchini;кабачок;кабачки|цукіні;кабачок|цукини;zucchini|courgette
+Aubergine;баклажан;баклажани;баклажан|баклажаны;aubergine|eggplant
+Kürbis;гарбуз;;тыква;pumpkin
+Rote Bete;буряк;буряки;свекла;beetroot|beets
+Radieschen;редиска;;редиска;radishes|radish
+Rettich;редька;;редька;white radish|daikon
+Sellerie;селера;;сельдерей;celery
+Eisbergsalat;салат айсберг;;салат айсберг;iceberg lettuce
+Salat;салат листовий;салат;салат листовой|салат;lettuce|salad
+Rucola;рукола;;руккола;rocket|arugula
+Spinat;шпинат;;шпинат;spinach
+Champignons;печериці;шампіньйони|гриби;шампиньоны;button mushrooms|champignons
+Pilze;гриби;;грибы;mushrooms
+Mais;кукурудза;;кукуруза;corn|sweetcorn
+Erbsen;горошок;зелений горошок;горошек|зеленый горошек;peas
+Bohnen;квасоля;;фасоль;beans
+Grüne Bohnen;стручкова квасоля;;стручковая фасоль;green beans
+Linsen;сочевиця;;чечевица;lentils
+Kichererbsen;нут;;нут;chickpeas
+Ingwer;імбир;;имбирь;ginger
+Petersilie;петрушка;;петрушка;parsley
+Dill;кріп;;укроп;dill
+Basilikum;базилік;;базилик;basil
+Schnittlauch;шніт-цибуля;;шнитт-лук;chives
+Koriander;кінза;коріандр;кинза|кориандр;coriander|cilantro
+Avocado;авокадо;;авокадо;avocado
+Sauerkraut;квашена капуста;;квашеная капуста;sauerkraut
+Essiggurken;мариновані огірки;солоні огірки|корнішони;маринованные огурцы|соленые огурцы|корнишоны;pickles|gherkins
+Oliven;оливки;маслини;оливки|маслины;olives
+Tiefkühlgemüse;заморожені овочі;;замороженные овощи;frozen vegetables
+Pommes;картопля фрі;фрі;картофель фри|фри;french fries|chips
+# --- Фрукти, ягоди, горіхи ---
+Äpfel;яблука;яблуко;яблоки|яблоко;apples|apple
+Bananen;банани;банан;бананы|банан;bananas|banana
+Birnen;груші;груша;груши|груша;pears|pear
+Orangen;апельсини;апельсин;апельсины|апельсин;oranges|orange
+Mandarinen;мандарини;мандарин;мандарины|мандарин;mandarins|tangerines
+Zitronen;лимони;лимон;лимоны|лимон;lemons|lemon
+Limetten;лайм;лайми;лайм|лаймы;limes|lime
+Grapefruit;грейпфрут;;грейпфрут;grapefruit
+Weintrauben;виноград;;виноград;grapes
+Erdbeeren;полуниця;клубніка;клубника;strawberries
+Himbeeren;малина;;малина;raspberries
+Heidelbeeren;чорниця;лохина;черника|голубика;blueberries
+Kirschen;черешня;вишня;черешня|вишня;cherries
+Pfirsiche;персики;персик;персики|персик;peaches|peach
+Nektarinen;нектарини;;нектарины;nectarines
+Aprikosen;абрикоси;абрикос;абрикосы|абрикос;apricots
+Pflaumen;сливи;слива;сливы|слива;plums
+Kiwi;ківі;;киви;kiwi
+Ananas;ананас;;ананас;pineapple
+Mango;манго;;манго;mango
+Melone;диня;;дыня;melon
+Wassermelone;кавун;;арбуз;watermelon
+Granatapfel;гранат;;гранат;pomegranate
+Rosinen;родзинки;ізюм;изюм;raisins
+Datteln;фініки;;финики;dates
+Getrocknete Aprikosen;курага;;курага;dried apricots
+Nüsse;горіхи;;орехи;nuts
+Walnüsse;волоські горіхи;;грецкие орехи;walnuts
+Haselnüsse;фундук;лісові горіхи;фундук|лесные орехи;hazelnuts
+Mandeln;мигдаль;;миндаль;almonds
+Erdnüsse;арахіс;;арахис;peanuts
+Cashewkerne;кешью;;кешью;cashews
+Sonnenblumenkerne;насіння соняшника;насіння;семечки|семена подсолнечника;sunflower seeds
+# --- Крупи, борошно, бакалія ---
+Nudeln;макарони;паста;макароны|паста;pasta|noodles
+Spaghetti;спагеті;;спагетти;spaghetti
+Reis;рис;;рис;rice
+Buchweizen;гречка;;гречка;buckwheat
+Haferflocken;вівсяні пластівці;вівсянка|геркулес;овсяные хлопья|овсянка|геркулес;oats|oat flakes|porridge oats
+Grieß;манна крупа;манка;манка|манная крупа;semolina
+Hirse;пшоно;;пшено;millet
+Bulgur;булгур;;булгур;bulgur
+Couscous;кускус;;кускус;couscous
+Mehl;борошно;мука;мука;flour
+Zucker;цукор;;сахар;sugar
+Puderzucker;цукрова пудра;;сахарная пудра;icing sugar|powdered sugar
+Vanillezucker;ванільний цукор;ванілін;ванильный сахар|ванилин;vanilla sugar
+Backpulver;розпушувач;;разрыхлитель;baking powder
+Hefe;дріжджі;;дрожжи;yeast
+Stärke;крохмаль;;крахмал;starch|cornflour
+Salz;сіль;;соль;salt
+Pfeffer;чорний перець;перець мелений;черный перец|перец молотый;black pepper|pepper
+Paprikapulver;паприка мелена;паприка;паприка молотая|паприка;paprika powder|paprika
+Zimt;кориця;;корица;cinnamon
+Lorbeerblätter;лавровий лист;;лавровый лист;bay leaves
+Gewürze;спеції;приправи;специи|приправы;spices
+Brühe;бульйон;кубики бульйону;бульон|бульонные кубики;stock|broth|bouillon
+Honig;мед;;мед;honey
+Marmelade;джем;варення|конфітюр;джем|варенье|конфитюр;jam|marmalade
+Nuss-Nougat-Creme;шоколадна паста;горіхова паста;шоколадная паста|ореховая паста;chocolate spread|hazelnut spread
+Erdnussbutter;арахісова паста;;арахисовая паста;peanut butter
+Müsli;мюслі;;мюсли;muesli
+Cornflakes;кукурудзяні пластівці;пластівці;кукурузные хлопья|хлопья;cornflakes|cereal
+Sonnenblumenöl;соняшникова олія;олія;подсолнечное масло|растительное масло;sunflower oil|vegetable oil
+Olivenöl;оливкова олія;;оливковое масло;olive oil
+Rapsöl;ріпакова олія;;рапсовое масло;rapeseed oil|canola oil
+Essig;оцет;;уксус;vinegar
+Senf;гірчиця;;горчица;mustard
+Ketchup;кетчуп;;кетчуп;ketchup
+Mayonnaise;майонез;;майонез;mayonnaise|mayo
+Tomatenmark;томатна паста;;томатная паста;tomato paste|tomato puree
+Passierte Tomaten;протерті помідори;томатне пюре;протертые помидоры|томатное пюре;passata|strained tomatoes
+Gehackte Tomaten;консервовані помідори;помідори в банці;консервированные помидоры|помидоры в банке;chopped tomatoes|canned tomatoes
+Sojasoße;соєвий соус;;соевый соус;soy sauce
+Pesto;песто;;песто;pesto
+Hummus;хумус;;хумус;hummus
+Tofu;тофу;;тофу;tofu
+Konserven;консерви;;консервы;canned food|tins
+Kakao;какао;;какао;cocoa
+Schokolade;шоколад;;шоколад;chocolate
+Süßigkeiten;цукерки;солодощі;конфеты|сладости;sweets|candy
+Gummibärchen;жувальні цукерки;желейки;жевательные конфеты|мармелад;gummy bears|gummies
+Chips;чипси;;чипсы;crisps|potato chips
+Eis;морозиво;;мороженое;ice cream
+Tiefkühlpizza;заморожена піца;піца;замороженная пицца|пицца;frozen pizza|pizza
+Pelmeni;пельмені;вареники;пельмени|вареники;dumplings|pelmeni
+Kartoffelpüree;картопляне пюре;пюре;картофельное пюре|пюре;mashed potatoes
+Sirup;сироп;;сироп;syrup
+Babynahrung;дитяче харчування;;детское питание;baby food
+# --- Напої ---
+Wasser;вода;;вода;water
+Mineralwasser;мінеральна вода;газована вода|мінералка;минеральная вода|газированная вода|минералка;mineral water|sparkling water
+Saft;сік;;сок;juice
+Orangensaft;апельсиновий сік;;апельсиновый сок;orange juice
+Apfelsaft;яблучний сік;;яблочный сок;apple juice
+Limonade;лимонад;;лимонад;lemonade|soda
+Cola;кола;;кола;cola|coke
+Energydrink;енергетик;;энергетик;energy drink
+Kaffee;кава;;кофе;coffee
+Kaffeebohnen;кава в зернах;;кофе в зернах;coffee beans
+Tee;чай;;чай;tea
+Grüner Tee;зелений чай;;зеленый чай;green tea
+Bier;пиво;;пиво;beer
+Wein;вино;;вино;wine
+Rotwein;червоне вино;;красное вино;red wine
+Weißwein;біле вино;;белое вино;white wine
+Sekt;ігристе вино;шампанське;игристое вино|шампанское;sparkling wine|champagne
+Wodka;горілка;водка;водка;vodka
+# --- Побутове ---
+Toilettenpapier;туалетний папір;;туалетная бумага;toilet paper|toilet roll
+Küchenrolle;паперові рушники;;бумажные полотенца;kitchen roll|paper towels
+Taschentücher;паперові хустинки;носовички;бумажные платочки|носовые платки;tissues
+Servietten;серветки;;салфетки;napkins|serviettes
+Spülmittel;засіб для миття посуду;;средство для мытья посуды;washing-up liquid|dish soap
+Spülmaschinentabs;таблетки для посудомийки;;таблетки для посудомойки;dishwasher tablets
+Waschmittel;пральний порошок;засіб для прання;стиральный порошок|средство для стирки;laundry detergent|washing powder
+Weichspüler;ополіскувач для білизни;кондиціонер для білизни;кондиционер для белья|ополаскиватель для белья;fabric softener
+Müllbeutel;пакети для сміття;;мешки для мусора|пакеты для мусора;bin bags|trash bags
+Alufolie;фольга;;фольга;aluminium foil|tin foil
+Frischhaltefolie;харчова плівка;;пищевая пленка;cling film|plastic wrap
+Backpapier;пергамент;папір для випікання;пергамент|бумага для выпечки;baking paper|parchment paper
+Schwämme;губки;губка;губки|губка;sponges|sponge
+Seife;мило;;мыло;soap
+Duschgel;гель для душу;;гель для душа;shower gel
+Shampoo;шампунь;;шампунь;shampoo
+Zahnpasta;зубна паста;;зубная паста;toothpaste
+Zahnbürste;зубна щітка;;зубная щетка;toothbrush
+Deo;дезодорант;;дезодорант;deodorant
+Windeln;підгузки;памперси;подгузники|памперсы;nappies|diapers
+Batterien;батарейки;;батарейки;batteries
+Hundefutter;корм для собак;;корм для собак;dog food
+Katzenfutter;корм для котів;;корм для кошек;cat food
+# --- Гігієна і побутове (додатково) ---
+Flüssigseife;рідке мило;;жидкое мыло;liquid soap|hand wash
+Haarspülung;бальзам для волосся;кондиціонер для волосся|ополіскувач для волосся;бальзам для волос|кондиционер для волос;conditioner|hair conditioner
+Mundspülung;ополіскувач для рота;;ополаскиватель для рта;mouthwash
+Zahnseide;зубна нитка;;зубная нить;dental floss|floss
+Rasierer;бритва;станок;бритва|станок;razor
+Rasierschaum;піна для гоління;гель для гоління;пена для бритья|гель для бритья;shaving foam|shaving cream
+Handcreme;крем для рук;;крем для рук;hand cream
+Gesichtscreme;крем для обличчя;;крем для лица;face cream
+Bodylotion;лосьйон для тіла;молочко для тіла;лосьон для тела|молочко для тела;body lotion
+Sonnencreme;сонцезахисний крем;;солнцезащитный крем;sunscreen|sun cream
+Wattepads;ватні диски;;ватные диски;cotton pads
+Wattestäbchen;ватні палички;;ватные палочки;cotton buds|cotton swabs
+Damenbinden;прокладки;гігієнічні прокладки;прокладки|гигиенические прокладки;sanitary pads|pads
+Tampons;тампони;;тампоны;tampons
+Feuchttücher;вологі серветки;;влажные салфетки;wet wipes|baby wipes
+Allzweckreiniger;універсальний засіб для прибирання;засіб для прибирання;универсальное чистящее средство|средство для уборки;all-purpose cleaner
+WC-Reiniger;засіб для унітазу;засіб для туалету;средство для унитаза|средство для туалета;toilet cleaner
+Glasreiniger;засіб для скла;;средство для стекол;glass cleaner|window cleaner
+Entkalker;засіб від накипу;;средство от накипи;descaler
+Glühbirne;лампочка;;лампочка;light bulb
+Kerzen;свічки;свічка;свечи|свеча;candles|candle
+Katzenstreu;наповнювач для котячого туалету;наповнювач;наполнитель для кошачьего туалета|наполнитель;cat litter
