@@ -53,9 +53,10 @@ class Store(private val file: File) {
     fun addItem(date: LocalDate, item: ShopItem) = update { d ->
         d.withDay(date) { list ->
             // same product already on the list and not bought yet -> add up if units match
-            val idx = list.indexOfFirst {
-                it.product.key == item.product.key && !it.checked && it.unit == item.unit &&
-                    it.promo == item.promo && it.card == item.card
+            // (a Pfand receipt is always its own line)
+            val idx = if (item.pfandReturn) -1 else list.indexOfFirst {
+                it.product.key == item.product.key && it.listId == item.listId && !it.checked && it.unit == item.unit &&
+                    it.promo == item.promo && it.card == item.card && it.pfand == item.pfand && !it.pfandReturn
             }
             if (idx >= 0) {
                 list.toMutableList().also {
@@ -80,22 +81,74 @@ class Store(private val file: File) {
         d.withDay(date) { list -> list.map { if (it.id == id) it.copy(checked = !it.checked) else it } }
     }
 
-    fun removeChecked(date: LocalDate) = update { d -> d.withDay(date) { list -> list.filterNot { it.checked } } }
+    fun removeChecked(date: LocalDate, listId: String) = update { d ->
+        d.withDay(date) { list -> list.filterNot { it.checked && it.listId == listId } }
+    }
 
-    fun clearDay(date: LocalDate) = update { d -> d.withDay(date) { emptyList() } }
+    /** Empties one list of the day (the other lists stay). */
+    fun clearList(date: LocalDate, listId: String) = update { d ->
+        d.withDay(date) { list -> list.filterNot { it.listId == listId } }
+    }
 
-    /** Appends items to [to] as new, unchecked entries. Returns how many were added. */
-    fun addAll(to: LocalDate, items: List<ShopItem>): Int {
+    /** Appends items to list [listId] of [to] as new, unchecked entries. Returns how many were added. */
+    fun addAll(to: LocalDate, items: List<ShopItem>, listId: String = MAIN_LIST): Int {
         if (items.isEmpty()) return 0
         update { d ->
-            var acc = d.withDay(to) { list -> list + items.map { it.copy(id = newId(), checked = false) } }
+            var acc = d.withDay(to) { list -> list + items.map { it.copy(id = newId(), checked = false, listId = listId) } }
             for (i in items) acc = acc.remember(i, countUse = false)
             acc
         }
         return items.size
     }
 
-    fun copyDay(from: LocalDate, to: LocalDate): Int = addAll(to, items(from))
+    /** Copies every list of [from] into list [listId] of [to]. Pfand receipts belong to their day, so they are not copied. */
+    fun copyDay(from: LocalDate, to: LocalDate, listId: String): Int =
+        addAll(to, items(from).filterNot { it.pfandReturn }, listId)
+
+    /** Adds a Pfand receipt (money back) to the day; it counts as already done. */
+    fun addPfandReturn(date: LocalDate, amount: Double, listId: String) = update { d ->
+        d.withDay(date) { list ->
+            list + ShopItem(
+                product = Product(name = PFAND_RETURN_NAME),
+                amount = 1.0,
+                unit = QtyUnit.PCS,
+                checked = true,
+                price = -amount,
+                pfandReturn = true,
+                listId = listId,
+            )
+        }
+    }
+
+    // ---------- several lists per day ----------
+
+    private fun AppData.withLists(date: LocalDate, f: (List<DayList>) -> List<DayList>): AppData {
+        val key = date.toString()
+        val next = f(listsOf(date))
+        // only the main list with its default name: nothing to store
+        val plain = next.size == 1 && next[0].id == MAIN_LIST && next[0].name == null
+        return copy(dayLists = if (plain) dayLists - key else dayLists + (key to next))
+    }
+
+    /** Adds an empty list to the day and returns its id. */
+    fun addList(date: LocalDate, name: String?): String {
+        val id = newId()
+        update { d -> d.withLists(date) { it + DayList(id, name?.trim()?.ifBlank { null }) } }
+        return id
+    }
+
+    fun renameList(date: LocalDate, listId: String, name: String) = update { d ->
+        d.withLists(date) { lists -> lists.map { if (it.id == listId) it.copy(name = name.trim().ifBlank { null }) else it } }
+    }
+
+    /** Removes an extra list with its items; the main list can only be emptied. */
+    fun deleteList(date: LocalDate, listId: String) {
+        if (listId == MAIN_LIST) return
+        update { d ->
+            d.withDay(date) { list -> list.filterNot { it.listId == listId } }
+                .withLists(date) { lists -> lists.filterNot { it.id == listId } }
+        }
+    }
 
     /** Days that have a list, newest first. */
     fun daysWithLists(): List<Pair<LocalDate, List<ShopItem>>> =
@@ -106,6 +159,7 @@ class Store(private val file: File) {
     // ---------- remembered products ----------
 
     private fun AppData.remember(item: ShopItem, countUse: Boolean = true): AppData {
+        if (item.pfandReturn) return this
         val p = item.product
         val amount = item.amount
         val unit = item.unit
@@ -130,6 +184,7 @@ class Store(private val file: File) {
             else old?.unitPrice?.takeIf { old.lastUnit == unit },
             promoPrice = if (perUnit != null && item.promo) SavedPrice(perUnit, unit) else old?.promoPrice,
             cardPrice = if (perUnit != null && item.card) SavedPrice(perUnit, unit) else old?.cardPrice,
+            pfand = item.pfand,
         )
         return copy(known = known + (p.key to kp))
     }

@@ -145,7 +145,8 @@ fun SpendingScreen(vm: AppViewModel) {
                     ) {
                         Text(Dates.short(d), modifier = Modifier.width(76.dp), style = MaterialTheme.typography.bodyMedium)
                         LinearProgressIndicator(
-                            progress = { (sum / max).toFloat() },
+                            // a day with only a Pfand receipt is negative: empty bar
+                            progress = { if (max > 0) (sum / max).toFloat().coerceIn(0f, 1f) else 0f },
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(horizontal = 8.dp),

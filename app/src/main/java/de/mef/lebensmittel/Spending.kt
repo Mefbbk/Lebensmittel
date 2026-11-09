@@ -59,17 +59,19 @@ object Spending {
             var daySum = 0.0
             for (item in list) {
                 if (onlyBought && !item.checked) continue
-                val price = item.price
+                // with the Pfand; a Pfand receipt is a minus line
+                val price = item.cost
                 if (price == null) {
                     unpriced++
                     continue
                 }
                 priced++
                 daySum += price
+                if (item.pfandReturn) continue
                 val name = item.product.name + (item.product.brand?.let { " ($it)" } ?: "")
                 perProduct[name] = (perProduct[name] ?: 0.0) + price
             }
-            if (daySum > 0) byDay.add(date to daySum)
+            if (daySum != 0.0) byDay.add(date to daySum)
             total += daySum
         }
         byDay.sortBy { it.first }

@@ -83,11 +83,12 @@ object ShareCodec {
             append(if (i.checked) "☑ " else "☐ ")
             append(i.product.name)
             i.product.brand?.let { append(" (").append(it).append(')') }
-            append(" — ").append(i.amountLabel)
-            i.price?.let { append(", ").append(formatMoney(it)) }
+            if (!i.pfandReturn) append(" — ").append(i.amountLabel)
+            i.price?.let { append(if (i.pfandReturn) ": " else ", ").append(formatMoney(it)) }
+            i.pfandTotal?.let { append(" + ").append(T.pfandShort(formatMoney(it))) }
             append('\n')
         }
-        val sum = items.mapNotNull { it.price }
+        val sum = items.mapNotNull { it.cost }
         if (sum.isNotEmpty() && sum.size == items.size) append(T.shareTotal(formatMoney(sum.sum()))).append('\n')
         append('\n')
         append(T.openInApp()).append('\n')

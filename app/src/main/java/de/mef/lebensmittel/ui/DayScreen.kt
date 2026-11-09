@@ -9,9 +9,13 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DriveFileRenameOutline
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Euro
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
+import androidx.compose.material.icons.filled.Recycling
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,6 +33,10 @@ import de.mef.lebensmittel.AppData
 import de.mef.lebensmittel.AppViewModel
 import de.mef.lebensmittel.Dates
 import de.mef.lebensmittel.Kcal
+import de.mef.lebensmittel.MAIN_LIST
+import de.mef.lebensmittel.itemsOf
+import de.mef.lebensmittel.listsOf
+import de.mef.lebensmittel.title
 import de.mef.lebensmittel.ShopItem
 import de.mef.lebensmittel.formatMoney
 import de.mef.lebensmittel.formatNumber
@@ -38,13 +46,20 @@ import java.time.LocalDate
 @Composable
 fun DayScreen(vm: AppViewModel, date: LocalDate) {
     val data by vm.store.data.collectAsState()
-    val dayItems = data.days[date.toString()].orEmpty()
+    val lists = data.listsOf(date)
+    val listId = vm.currentList(date)
+    val currentIndex = lists.indexOfFirst { it.id == listId }.coerceAtLeast(0)
+    // the day screen shows one list at a time
+    val dayItems = data.itemsOf(date, listId)
     // not bought first, bought at the bottom
     val sorted = remember(dayItems) { dayItems.filter { !it.checked } + dayItems.filter { it.checked } }
     val context = LocalContext.current
     var menu by remember { mutableStateOf(false) }
     var copyFrom by remember { mutableStateOf(false) }
     var confirmClear by remember { mutableStateOf(false) }
+    var confirmDeleteList by remember { mutableStateOf(false) }
+    /** null = closed, [NEW_LIST] = name a new list, otherwise the id of the list to rename */
+    var nameDialog by remember { mutableStateOf<String?>(null) }
     val done = dayItems.count { it.checked }
 
     Scaffold(
@@ -77,6 +92,33 @@ fun DayScreen(vm: AppViewModel, date: LocalDate) {
                         IconButton(onClick = { menu = true }) { Icon(Icons.Filled.MoreVert, contentDescription = T.menu()) }
                         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                             DropdownMenuItem(
+                                text = { Text(T.newList()) },
+                                leadingIcon = { Icon(Icons.AutoMirrored.Filled.PlaylistAdd, contentDescription = null) },
+                                onClick = {
+                                    menu = false
+                                    nameDialog = NEW_LIST
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(T.renameList()) },
+                                leadingIcon = { Icon(Icons.Filled.DriveFileRenameOutline, contentDescription = null) },
+                                onClick = {
+                                    menu = false
+                                    nameDialog = listId
+                                },
+                            )
+                            if (listId != MAIN_LIST) {
+                                DropdownMenuItem(
+                                    text = { Text(T.deleteList()) },
+                                    leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
+                                    onClick = {
+                                        menu = false
+                                        confirmDeleteList = true
+                                    },
+                                )
+                            }
+                            HorizontalDivider()
+                            DropdownMenuItem(
                                 text = { Text(T.copyFromOtherDay()) },
                                 leadingIcon = { Icon(Icons.Filled.CalendarMonth, contentDescription = null) },
                                 onClick = {
@@ -94,6 +136,14 @@ fun DayScreen(vm: AppViewModel, date: LocalDate) {
                                 },
                             )
                             DropdownMenuItem(
+                                text = { Text(T.pfandReturnMenu()) },
+                                leadingIcon = { Icon(Icons.Filled.Recycling, contentDescription = null) },
+                                onClick = {
+                                    menu = false
+                                    vm.openPfandReturn(date)
+                                },
+                            )
+                            DropdownMenuItem(
                                 text = { Text(T.spendingPeriod()) },
                                 leadingIcon = { Icon(Icons.Filled.Euro, contentDescription = null) },
                                 onClick = {
@@ -106,7 +156,7 @@ fun DayScreen(vm: AppViewModel, date: LocalDate) {
                                 enabled = done > 0,
                                 onClick = {
                                     menu = false
-                                    vm.store.removeChecked(date)
+                                    vm.store.removeChecked(date, listId)
                                 },
                             )
                             DropdownMenuItem(
@@ -131,46 +181,104 @@ fun DayScreen(vm: AppViewModel, date: LocalDate) {
         },
         bottomBar = { DaySummary(dayItems, showKcal = data.showKcal) },
     ) { padding ->
-        if (dayItems.isEmpty()) {
-            Column(
-                Modifier
-                    .padding(padding)
-                    .fillMaxSize()
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    T.dayEmpty(),
-                    style = MaterialTheme.typography.titleMedium,
-                    textAlign = TextAlign.Center,
-                )
-                Spacer(Modifier.height(16.dp))
-                Button(onClick = { vm.startAdding(date) }) { Text(T.addProduct()) }
-                Spacer(Modifier.height(8.dp))
-                OutlinedButton(onClick = { copyFrom = true }) { Text(T.copyFromOtherDay()) }
-            }
-        } else {
-            LazyColumn(
-                Modifier
-                    .padding(padding)
-                    .fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 96.dp),
-            ) {
-                items(sorted, key = { it.id }) { item ->
-                    ItemRow(
-                        item = item,
-                        settings = data,
-                        onToggle = { vm.store.toggle(date, item.id) },
-                        onEdit = { vm.editItem(date, item) },
+        Column(
+            Modifier
+                .padding(padding)
+                .fillMaxSize(),
+        ) {
+            // tabs only when the day has more than one list
+            if (lists.size > 1) {
+                ScrollableTabRow(
+                    selectedTabIndex = currentIndex,
+                    containerColor = Color.Transparent,
+                    edgePadding = 8.dp,
+                ) {
+                    lists.forEachIndexed { i, l ->
+                        val n = data.itemsOf(date, l.id).size
+                        Tab(
+                            selected = i == currentIndex,
+                            onClick = { vm.selectList(date, l.id) },
+                            text = { Text(l.title(i) + if (n > 0) " ($n)" else "") },
+                        )
+                    }
+                    Tab(
+                        selected = false,
+                        onClick = { nameDialog = NEW_LIST },
+                        icon = { Icon(Icons.Filled.Add, contentDescription = T.newList()) },
                     )
-                    HorizontalDivider()
+                }
+            }
+            if (dayItems.isEmpty()) {
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        T.dayEmpty(),
+                        style = MaterialTheme.typography.titleMedium,
+                        textAlign = TextAlign.Center,
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Button(onClick = { vm.startAdding(date) }) { Text(T.addProduct()) }
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedButton(onClick = { copyFrom = true }) { Text(T.copyFromOtherDay()) }
+                    if (lists.size == 1) {
+                        Spacer(Modifier.height(8.dp))
+                        TextButton(onClick = { nameDialog = NEW_LIST }) { Text(T.newList()) }
+                    }
+                }
+            } else {
+                LazyColumn(
+                    Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 96.dp),
+                ) {
+                    items(sorted, key = { it.id }) { item ->
+                        ItemRow(
+                            item = item,
+                            settings = data,
+                            onToggle = { vm.store.toggle(date, item.id) },
+                            onEdit = { vm.editItem(date, item) },
+                        )
+                        HorizontalDivider()
+                    }
                 }
             }
         }
     }
 
     if (copyFrom) CopyFromDialog(vm, date) { copyFrom = false }
+
+    nameDialog?.let { target ->
+        val isNew = target == NEW_LIST
+        val old = lists.indexOfFirst { it.id == target }.takeIf { it >= 0 }?.let { lists[it].title(it) }
+        ListNameDialog(
+            title = if (isNew) T.newList() else T.renameList(),
+            initial = if (isNew) T.listN(lists.size + 1) else old.orEmpty(),
+            onDismiss = { nameDialog = null },
+            onSave = { name ->
+                if (isNew) vm.addList(date, name) else vm.store.renameList(date, target, name)
+                nameDialog = null
+            },
+        )
+    }
+
+    if (confirmDeleteList) {
+        AlertDialog(
+            onDismissRequest = { confirmDeleteList = false },
+            title = { Text(T.deleteListQ(lists[currentIndex].title(currentIndex))) },
+            text = { Text(T.deleteListText()) },
+            confirmButton = {
+                TextButton(onClick = {
+                    vm.deleteList(date, listId)
+                    confirmDeleteList = false
+                }) { Text(T.delete()) }
+            },
+            dismissButton = { TextButton(onClick = { confirmDeleteList = false }) { Text(T.cancel()) } },
+        )
+    }
 
     if (confirmClear) {
         AlertDialog(
@@ -179,7 +287,7 @@ fun DayScreen(vm: AppViewModel, date: LocalDate) {
             text = { Text(T.clearListText(Dates.full(date))) },
             confirmButton = {
                 TextButton(onClick = {
-                    vm.store.clearDay(date)
+                    vm.store.clearList(date, listId)
                     confirmClear = false
                 }) { Text(T.clear()) }
             },
@@ -235,9 +343,20 @@ private fun ItemRow(item: ShopItem, settings: AppData, onToggle: () -> Unit, onE
                 .padding(horizontal = 8.dp),
             horizontalAlignment = Alignment.End,
         ) {
-            Text(item.amountLabel, style = MaterialTheme.typography.titleSmall)
+            if (item.pfandReturn) {
+                Icon(Icons.Filled.Recycling, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary)
+            } else {
+                Text(item.amountLabel, style = MaterialTheme.typography.titleSmall)
+            }
             item.price?.let {
-                Text(formatMoney(it), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    formatMoney(it),
+                    style = if (item.pfandReturn) MaterialTheme.typography.titleSmall else MaterialTheme.typography.bodySmall,
+                    color = if (item.pfandReturn) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            item.pfandTotal?.let {
+                Text(T.pfandShort("+" + formatMoney(it)), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             priceKindLabel(item)?.let {
                 Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
@@ -260,12 +379,13 @@ private fun kcalLine(item: ShopItem): String? {
 
 @Composable
 private fun DaySummary(items: List<ShopItem>, showKcal: Boolean) {
-    val totals = if (showKcal) items.map { Kcal.total(it) } else emptyList()
+    val totals = if (showKcal) items.filterNot { it.pfandReturn }.map { Kcal.total(it) } else emptyList()
     val knownKcal = totals.filterNotNull()
     val unknownKcal = totals.count { it == null }
     // the total is only meaningful when every item on the day has a price
-    val prices = if (items.isNotEmpty() && items.all { it.price != null }) items.mapNotNull { it.price } else emptyList()
-    val boughtSum = items.filter { it.checked }.mapNotNull { it.price }.sum()
+    // prices include the Pfand; Pfand receipts are minus lines
+    val prices = if (items.isNotEmpty() && items.all { it.cost != null }) items.mapNotNull { it.cost } else emptyList()
+    val boughtSum = items.filter { it.checked }.mapNotNull { it.cost }.sum()
     if (knownKcal.isEmpty() && prices.isEmpty()) return
     Surface(tonalElevation = 3.dp) {
         Column(
@@ -290,4 +410,27 @@ private fun DaySummary(items: List<ShopItem>, showKcal: Boolean) {
             }
         }
     }
+}
+
+/** Marks "name a new list" in the list-name dialog state. */
+private const val NEW_LIST = "\u0000new"
+
+@Composable
+private fun ListNameDialog(title: String, initial: String, onDismiss: () -> Unit, onSave: (String) -> Unit) {
+    var name by remember { mutableStateOf(initial) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                singleLine = true,
+                label = { Text(T.listNameHint()) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+        confirmButton = { TextButton(enabled = name.isNotBlank(), onClick = { onSave(name) }) { Text(T.save()) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(T.cancel()) } },
+    )
 }

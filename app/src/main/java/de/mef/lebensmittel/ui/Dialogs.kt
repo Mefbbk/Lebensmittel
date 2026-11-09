@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Recycling
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Wallpaper
 import androidx.compose.material3.*
@@ -18,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,8 +29,12 @@ import de.mef.lebensmittel.AppViewModel
 import de.mef.lebensmittel.Dates
 import de.mef.lebensmittel.Kcal
 import de.mef.lebensmittel.PendingAdd
+import de.mef.lebensmittel.DEFAULT_PFAND
+import de.mef.lebensmittel.PfandReturnEdit
 import de.mef.lebensmittel.QtyUnit
 import de.mef.lebensmittel.SavedPrice
+import de.mef.lebensmittel.ShopItem
+import de.mef.lebensmittel.UnknownBarcode
 import de.mef.lebensmittel.ShareCodec
 import de.mef.lebensmittel.daysSorted
 import de.mef.lebensmittel.formatMoney
@@ -79,6 +85,15 @@ fun QuantityDialog(vm: AppViewModel, p: PendingAdd) {
     val shownPrice = if (priceTouched) priceText else autoPrice?.let { formatMoneyPlain(it) } ?: ""
     val price = if (priceTouched) parseMoney(priceText) else autoPrice
     val priceInvalid = priceTouched && priceText.isNotBlank() && parseMoney(priceText) == null
+
+    // Pfand (bottle / can deposit): ticked again when the product had one last time.
+    var hasPfand by remember(p) { mutableStateOf(p.pfand != null) }
+    var pfandText by remember(p) { mutableStateOf(formatMoneyPlain(p.pfand ?: DEFAULT_PFAND)) }
+    val pfand = if (hasPfand) parseMoney(pfandText) else null
+    val pfandInvalid = hasPfand && pfand == null
+    val pfandLine = amount?.let { a ->
+        ShopItem(product = p.product, amount = a, unit = unit, price = price, pfand = pfand)
+    }
 
     AlertDialog(
         onDismissRequest = { vm.pending = null },
@@ -176,12 +191,44 @@ fun QuantityDialog(vm: AppViewModel, p: PendingAdd) {
                 )
                 PriceKindBox(T.promoPrice(), promo, p.promoPrice) { promo = it }
                 PriceKindBox(T.cardPrice(), card, p.cardPrice) { card = it }
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable { hasPfand = !hasPfand },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Checkbox(checked = hasPfand, onCheckedChange = { hasPfand = it })
+                    Text(T.pfandBox(), style = MaterialTheme.typography.bodyLarge)
+                }
+                if (hasPfand) {
+                    OutlinedTextField(
+                        value = pfandText,
+                        onValueChange = { pfandText = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        label = { Text(T.pfandPer(unit.label)) },
+                        suffix = { Text("€") },
+                        isError = pfandInvalid,
+                        supportingText = {
+                            val line = pfandLine
+                            Text(
+                                when {
+                                    pfandInvalid -> T.enterNumber()
+                                    line?.cost != null -> T.withPfand(formatMoney(line.cost!!))
+                                    line?.pfandTotal != null -> T.pfandTotal(formatMoney(line.pfandTotal!!))
+                                    else -> ""
+                                },
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    )
+                }
             }
         },
         confirmButton = {
             TextButton(
-                enabled = amount != null && !priceInvalid,
-                onClick = { amount?.let { vm.confirmPending(it, unit, price, promo, card) } },
+                enabled = amount != null && !priceInvalid && !pfandInvalid,
+                onClick = { amount?.let { vm.confirmPending(it, unit, price, promo, card, pfand) } },
             ) { Text(if (editing) T.save() else T.add()) }
         },
         dismissButton = {
@@ -219,6 +266,80 @@ private fun PriceKindBox(label: String, checked: Boolean, last: SavedPrice?, onC
             }
         }
     }
+}
+
+/** Money back from the bottle return machine: added to the day as a minus line. */
+@Composable
+fun PfandReturnDialog(vm: AppViewModel, r: PfandReturnEdit) {
+    var text by remember(r) { mutableStateOf(r.amount?.let { formatMoneyPlain(it) } ?: "") }
+    val amount = parseMoney(text)?.takeIf { it > 0 }
+    val editing = r.itemId != null
+    AlertDialog(
+        onDismissRequest = { vm.pfandReturn = null },
+        icon = { Icon(Icons.Filled.Recycling, contentDescription = null) },
+        title = { Text(T.pfandReturnTitle()) },
+        text = {
+            Column {
+                Text(T.pfandReturnHint(), style = MaterialTheme.typography.bodyMedium)
+                Spacer(Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    label = { Text(T.pfandReturnAmount()) },
+                    prefix = { Text("−") },
+                    suffix = { Text("€") },
+                    isError = text.isNotBlank() && amount == null,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(enabled = amount != null, onClick = { amount?.let { vm.savePfandReturn(it) } }) {
+                Text(if (editing) T.save() else T.add())
+            }
+        },
+        dismissButton = {
+            Row {
+                if (editing) {
+                    TextButton(
+                        onClick = { vm.deletePfandReturn() },
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                    ) { Text(T.delete()) }
+                }
+                TextButton(onClick = { vm.pfandReturn = null }) { Text(T.cancel()) }
+            }
+        },
+    )
+}
+
+/** A scanned barcode was not found anywhere: name it, it is added and remembered with the barcode. */
+@Composable
+fun UnknownBarcodeDialog(vm: AppViewModel, u: UnknownBarcode) {
+    var name by remember(u) { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = { vm.unknownBarcode = null },
+        title = { Text(T.unknownBarcodeTitle()) },
+        text = {
+            Column {
+                Text(T.barcodeNotFoundEnterName(u.code), style = MaterialTheme.typography.bodyMedium)
+                Spacer(Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    label = { Text(T.productName()) },
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(enabled = name.isNotBlank(), onClick = { vm.nameUnknownBarcode(name) }) { Text(T.add()) }
+        },
+        dismissButton = { TextButton(onClick = { vm.unknownBarcode = null }) { Text(T.cancel()) } },
+    )
 }
 
 /** Shown when a shared list arrives (link, "Share" from a messenger, or clipboard). */

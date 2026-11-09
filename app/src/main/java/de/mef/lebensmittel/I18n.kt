@@ -111,6 +111,13 @@ object T {
     val copyListText = t("Копіювати список (текст і посилання)", "Copy list (text and link)", "Liste kopieren (Text und Link)", "Копировать список (текст и ссылка)", "نسخ القائمة (نص ورابط)")
     val removeBought = t("Прибрати куплене", "Remove bought items", "Gekauftes entfernen", "Убрать купленное", "إزالة ما تم شراؤه")
     val clearList = t("Очистити список", "Clear list", "Liste leeren", "Очистить список", "مسح القائمة")
+    val listN = t("Список {0}", "List {0}", "Liste {0}", "Список {0}", "القائمة {0}")
+    val newList = t("Новий список на цей день", "New list for this day", "Neue Liste für diesen Tag", "Новый список на этот день", "قائمة جديدة لهذا اليوم")
+    val renameList = t("Перейменувати список", "Rename list", "Liste umbenennen", "Переименовать список", "إعادة تسمية القائمة")
+    val deleteList = t("Видалити цей список", "Delete this list", "Diese Liste löschen", "Удалить этот список", "حذف هذه القائمة")
+    val deleteListQ = t("Видалити «{0}»?", "Delete “{0}”?", "„{0}“ löschen?", "Удалить «{0}»?", "حذف «{0}»؟")
+    val deleteListText = t("Список і всі продукти в ньому буде видалено. Інші списки дня залишаться.", "The list and all its products will be removed. The day's other lists stay.", "Die Liste und alle ihre Produkte werden gelöscht. Die anderen Listen des Tages bleiben.", "Список и все продукты в нём будут удалены. Другие списки дня останутся.", "سيتم حذف القائمة وجميع منتجاتها. تبقى قوائم اليوم الأخرى.")
+    val listNameHint = t("Назва (напр. Lidl, Aldi)", "Name (e.g. Lidl, Aldi)", "Name (z. B. Lidl, Aldi)", "Название (напр. Lidl, Aldi)", "الاسم (مثل Lidl، Aldi)")
     val clearListQ = t("Очистити список?", "Clear the list?", "Liste leeren?", "Очистить список?", "مسح القائمة؟")
     val clearListText = t("Усі продукти на {0} буде видалено.", "All products for {0} will be removed.", "Alle Produkte für {0} werden gelöscht.", "Все продукты на {0} будут удалены.", "سيتم حذف جميع منتجات {0}.")
     val dayEmpty = t("Список на цей день порожній", "The list for this day is empty", "Die Liste für diesen Tag ist leer", "Список на этот день пуст", "قائمة هذا اليوم فارغة")
@@ -230,6 +237,24 @@ object T {
     val lastPriceWas = t("Раніше була: {0} за 1 {1}", "Last time: {0} per 1 {1}", "Zuletzt: {0} pro 1 {1}", "Раньше была: {0} за 1 {1}", "آخر مرة: {0} لكل 1 {1}")
     val promoBadge = t("акція", "offer", "Aktion", "акция", "عرض")
     val cardBadge = t("карта", "card", "Karte", "карта", "بطاقة")
+    val pfandBox = t("Пфанд (застава за пляшку / банку)", "Pfand (bottle / can deposit)", "Pfand", "Пфанд (залог за бутылку / банку)", "Pfand (تأمين القارورة / العلبة)")
+    val pfandPer = t("Пфанд за 1 {0}", "Deposit per 1 {0}", "Pfand pro 1 {0}", "Пфанд за 1 {0}", "التأمين لكل 1 {0}")
+    val pfandTotal = t("Пфанд разом: {0}", "Deposit total: {0}", "Pfand gesamt: {0}", "Пфанд всего: {0}", "إجمالي التأمين: {0}")
+    val withPfand = t("Разом з пфандом: {0}", "Total with deposit: {0}", "Gesamt mit Pfand: {0}", "Всего с пфандом: {0}", "المجموع مع التأمين: {0}")
+    val pfandShort = t("пфанд {0}", "Pfand {0}", "Pfand {0}", "пфанд {0}", "Pfand {0}")
+    val pfandReturnMenu = t("Чек за пфанд (−)", "Pfand receipt (−)", "Pfandbon (−)", "Чек за пфанд (−)", "إيصال Pfand (−)")
+    val pfandReturnTitle = t("Чек за пфанд", "Pfand receipt", "Pfandbon", "Чек за пфанд", "إيصال Pfand")
+    val pfandReturnHint = t(
+        "Скільки повернув автомат за пляшки й банки. Сума віднімається від витрат за день.",
+        "How much the machine gave back for bottles and cans. It is subtracted from the day's spending.",
+        "Wie viel der Automat für Flaschen und Dosen zurückgegeben hat. Wird von den Ausgaben des Tages abgezogen.",
+        "Сколько вернул автомат за бутылки и банки. Сумма вычитается из расходов за день.",
+        "كم أعادت الآلة مقابل القوارير والعلب. يُخصم المبلغ من مصاريف اليوم.",
+    )
+    val pfandReturnAmount = t("Сума по чеку", "Receipt amount", "Betrag auf dem Bon", "Сумма по чеку", "مبلغ الإيصال")
+    val pfandReturnAdded = t("Чек за пфанд: −{0}", "Pfand receipt: −{0}", "Pfandbon: −{0}", "Чек за пфанд: −{0}", "إيصال Pfand: −{0}")
+    val unknownBarcodeTitle = t("Новий товар", "New product", "Neues Produkt", "Новый товар", "منتج جديد")
+    val productName = t("Назва товару", "Product name", "Produktname", "Название товара", "اسم المنتج")
     val canAddLater = t("Можна вказати пізніше, кнопкою ✎ у списку", "You can add it later with the ✎ button in the list", "Kann später über ✎ in der Liste eingetragen werden", "Можно указать позже кнопкой ✎ в списке", "يمكنك إضافته لاحقًا بزر ✎ في القائمة")
     val receivedList = t("Отримано список", "List received", "Liste empfangen", "Получен список", "تم استلام قائمة")
     val composedFor = t(" · складений на {0}", " · made for {0}", " · erstellt für {0}", " · составлен на {0}", " · مُعدّة ليوم {0}")

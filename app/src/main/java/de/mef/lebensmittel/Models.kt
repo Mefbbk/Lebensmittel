@@ -67,9 +67,48 @@ data class ShopItem(
     val promo: Boolean = false,
     /** The price is the one with the store's customer card (Lidl Plus, Payback …). */
     val card: Boolean = false,
+    /** Deposit (Pfand) for one bottle / can (EUR), null = no deposit. */
+    val pfand: Double? = null,
+    /** A Pfand receipt from the return machine: [price] is negative, not a product to buy. */
+    val pfandReturn: Boolean = false,
+    /** Which of the day's shopping lists the item is on; "" = the main list. */
+    val listId: String = MAIN_LIST,
 ) {
     val amountLabel: String get() = "${formatNumber(amount)} ${unit.label}"
+
+    /** Deposit for the whole line: per piece / pack, or once for weighed amounts. */
+    val pfandTotal: Double?
+        get() = pfand?.let { it * if (unit == QtyUnit.PCS || unit == QtyUnit.PACK) amount else 1.0 }
+
+    /** What the line costs with the deposit; null when there is no price yet. */
+    val cost: Double?
+        get() = price?.let { it + (pfandTotal ?: 0.0) }
 }
+
+/** Id of the list every day has; extra lists get their own ids. */
+const val MAIN_LIST = ""
+
+/** One shopping list of a day. [name] null = default name ("Список 1" …). */
+data class DayList(val id: String, val name: String? = null)
+
+/** Name shown on the tab: the user's name or "Список N". */
+fun DayList.title(index: Int): String = name?.takeIf { it.isNotBlank() } ?: T.listN(index + 1)
+
+/** Lists of a day in order; a day without extra lists has just the main one. */
+fun AppData.listsOf(date: java.time.LocalDate): List<DayList> =
+    dayLists[date.toString()]?.takeIf { l -> l.any { it.id == MAIN_LIST } } ?: listOf(DayList(MAIN_LIST))
+
+/** Items on one list of the day; items of a list that no longer exists show up on the main list. */
+fun AppData.itemsOf(date: java.time.LocalDate, listId: String): List<ShopItem> {
+    val ids = listsOf(date).map { it.id }.toSet()
+    return days[date.toString()].orEmpty().filter { (if (it.listId in ids) it.listId else MAIN_LIST) == listId }
+}
+
+/** Name of a Pfand receipt line in the list (product names stay German). */
+const val PFAND_RETURN_NAME = "Pfand-Rückgabe"
+
+/** Usual German deposit for a single-use bottle or can. */
+const val DEFAULT_PFAND = 0.25
 
 /** A remembered price for 1 [unit] (EUR). */
 data class SavedPrice(val perUnit: Double, val unit: QtyUnit)
@@ -86,6 +125,8 @@ data class KnownProduct(
     val promoPrice: SavedPrice? = null,
     /** Last customer-card price; suggested when the "card" box is ticked. */
     val cardPrice: SavedPrice? = null,
+    /** Deposit per piece the product had last time; the Pfand box is ticked again next time. */
+    val pfand: Double? = null,
 )
 
 data class AppData(
@@ -111,6 +152,8 @@ data class AppData(
     val reminders: List<Reminder> = emptyList(),
     /** Bottom tabs the user switched off: "nutrition", "spending", "reminders". */
     val hiddenTabs: Set<String> = emptySet(),
+    /** Shopping lists per day ("2026-11-09" -> lists), only for days that have more than one or a renamed one. */
+    val dayLists: Map<String, List<DayList>> = emptyMap(),
 )
 
 /** A note for a day with a time; a notification is shown at that time. */

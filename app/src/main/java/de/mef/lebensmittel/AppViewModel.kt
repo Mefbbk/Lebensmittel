@@ -51,7 +51,15 @@ data class PendingAdd(
     /** Initial state of the "promo" / "card" boxes (when editing an item). */
     val promo: Boolean = false,
     val card: Boolean = false,
+    /** Deposit per piece (remembered or of the edited item); the Pfand box starts ticked when set. */
+    val pfand: Double? = null,
 )
+
+/** The Pfand receipt dialog: a new receipt ([itemId] = null) or editing one on the list. */
+data class PfandReturnEdit(val date: LocalDate, val itemId: String? = null, val amount: Double? = null)
+
+/** A scanned barcode no database knows; the dialog asks for its name. */
+data class UnknownBarcode(val date: LocalDate, val code: String)
 
 data class UiMessage(val id: Long, val text: String)
 
@@ -261,14 +269,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         pending = PendingAdd(
             date, withKnown(product), k?.lastAmount ?: 1.0, k?.lastUnit ?: QtyUnit.PCS,
             unitPrice = k?.unitPrice, unitPriceUnit = k?.lastUnit,
-            promoPrice = k?.promoPrice, cardPrice = k?.cardPrice,
+            promoPrice = k?.promoPrice, cardPrice = k?.cardPrice, pfand = k?.pfand,
         )
     }
 
     fun chooseKnown(date: LocalDate, k: KnownProduct) {
         pending = PendingAdd(
             date, k.product, k.lastAmount, k.lastUnit, unitPrice = k.unitPrice, unitPriceUnit = k.lastUnit,
-            promoPrice = k.promoPrice, cardPrice = k.cardPrice,
+            promoPrice = k.promoPrice, cardPrice = k.cardPrice, pfand = k.pfand,
         )
     }
 
@@ -298,6 +306,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun editItem(date: LocalDate, item: ShopItem) {
+        if (item.pfandReturn) {
+            pfandReturn = PfandReturnEdit(date, item.id, item.price?.let { -it })
+            return
+        }
         val k = store.data.value.known[item.product.key]
         // the item's own price fills the slot of its kind, the other kinds come from what was remembered
         val own = item.price?.let { SavedPrice(it / item.amount, item.unit) }
@@ -310,19 +322,33 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             cardPrice = if (item.card && own != null) own else k?.cardPrice,
             promo = item.promo,
             card = item.card,
+            pfand = item.pfand,
         )
     }
 
-    fun confirmPending(amount: Double, unit: QtyUnit, price: Double?, promo: Boolean = false, card: Boolean = false) {
+    fun confirmPending(
+        amount: Double,
+        unit: QtyUnit,
+        price: Double?,
+        promo: Boolean = false,
+        card: Boolean = false,
+        pfand: Double? = null,
+    ) {
         val p = pending ?: return
         if (p.editItemId != null) {
             store.items(p.date).firstOrNull { it.id == p.editItemId }?.let {
-                store.updateItem(p.date, it.copy(amount = amount, unit = unit, price = price, promo = promo, card = card))
+                store.updateItem(
+                    p.date,
+                    it.copy(amount = amount, unit = unit, price = price, promo = promo, card = card, pfand = pfand),
+                )
             }
         } else {
             store.addItem(
                 p.date,
-                ShopItem(product = p.product, amount = amount, unit = unit, price = price, promo = promo, card = card),
+                ShopItem(
+                    product = p.product, amount = amount, unit = unit, price = price,
+                    promo = promo, card = card, pfand = pfand, listId = currentList(p.date),
+                ),
             )
             if (p.product.barcode != null && p.product.barcode == pendingBarcode) pendingBarcode = null
             toast(T.added(p.product.name, "${formatNumber(amount)} ${unit.label}"))
@@ -335,6 +361,76 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val p = pending ?: return
         p.editItemId?.let { store.removeItem(p.date, it) }
         pending = null
+    }
+
+    // ---------------- several lists per day ----------------
+
+    /** The list tab chosen on a day screen: (day, list id). */
+    private var listChoice by mutableStateOf<Pair<LocalDate, String>?>(null)
+
+    /** The list new products go to on [date]; the main list unless another tab was chosen there. */
+    fun currentList(date: LocalDate): String {
+        val id = listChoice?.takeIf { it.first == date }?.second ?: return MAIN_LIST
+        return if (store.data.value.listsOf(date).any { it.id == id }) id else MAIN_LIST
+    }
+
+    fun selectList(date: LocalDate, listId: String) {
+        listChoice = date to listId
+    }
+
+    fun addList(date: LocalDate, name: String) {
+        selectList(date, store.addList(date, name))
+    }
+
+    fun deleteList(date: LocalDate, listId: String) {
+        store.deleteList(date, listId)
+        if (listChoice?.second == listId) listChoice = date to MAIN_LIST
+    }
+
+    // ---------------- Pfand receipts ----------------
+
+    var pfandReturn by mutableStateOf<PfandReturnEdit?>(null)
+
+    fun openPfandReturn(date: LocalDate) {
+        pfandReturn = PfandReturnEdit(date)
+    }
+
+    fun savePfandReturn(amount: Double) {
+        val r = pfandReturn ?: return
+        val old = r.itemId?.let { id -> store.items(r.date).firstOrNull { it.id == id } }
+        if (old != null) {
+            store.updateItem(r.date, old.copy(price = -amount))
+        } else {
+            store.addPfandReturn(r.date, amount, currentList(r.date))
+            toast(T.pfandReturnAdded(formatMoney(amount)))
+        }
+        pfandReturn = null
+    }
+
+    fun deletePfandReturn() {
+        val r = pfandReturn ?: return
+        r.itemId?.let { store.removeItem(r.date, it) }
+        pfandReturn = null
+    }
+
+    // ---------------- unknown barcode ----------------
+
+    var unknownBarcode by mutableStateOf<UnknownBarcode?>(null)
+
+    /** The user named a barcode no database knows: it is added now and found by the barcode next time. */
+    fun nameUnknownBarcode(name: String) {
+        val u = unknownBarcode ?: return
+        val t = name.trim()
+        if (t.isEmpty()) return
+        val e = dict.exact(t)
+        val product = if (e != null) {
+            Product(name = e.de, nameUk = e.uk, barcode = u.code)
+        } else {
+            Product(name = Txt.capitalize(t), barcode = u.code)
+        }
+        unknownBarcode = null
+        pendingBarcode = null
+        choose(u.date, product)
     }
 
     // ---------------- spending ----------------
@@ -555,11 +651,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             scanLoading = false
             val product = result.getOrNull()
             when {
-                product != null -> choose(date, product)
-                result.isFailure -> toast(T.noConnection())
+                product != null -> choose(date, product.copy(barcode = product.barcode ?: code))
                 else -> {
+                    // not found (or offline): ask for the name right away, the barcode is kept with it
                     pendingBarcode = code
-                    toast(T.barcodeNotFoundEnterName(code))
+                    unknownBarcode = UnknownBarcode(date, code)
+                    if (result.isFailure) toast(T.noConnection())
                 }
             }
         }
@@ -568,7 +665,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     // ---------------- sharing ----------------
 
     fun shareDay(context: Context, date: LocalDate) {
-        val items = store.items(date)
+        val items = store.data.value.itemsOf(date, currentList(date))
         if (items.isEmpty()) {
             toast(T.listEmpty())
             return
@@ -582,7 +679,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun copyDayToClipboard(context: Context, date: LocalDate) {
-        val items = store.items(date)
+        val items = store.data.value.itemsOf(date, currentList(date))
         if (items.isEmpty()) return
         val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         cm.setPrimaryClip(ClipData.newPlainText(T.appTitle(), ShareCodec.shareText(date, items)))
@@ -590,7 +687,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun copyDay(from: LocalDate, to: LocalDate) {
-        val n = store.copyDay(from, to)
+        val n = store.copyDay(from, to, currentList(to))
         toast(T.copiedFrom(Dates.productsCount(n), Dates.short(from)))
     }
 
@@ -621,7 +718,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun confirmImport(date: LocalDate) {
         val s = pendingImport ?: return
-        val n = store.addAll(date, s.items)
+        val n = store.addAll(date, s.items, currentList(date))
         pendingImport = null
         goToDay(date)
         toast(T.addedCount(Dates.productsCount(n)))

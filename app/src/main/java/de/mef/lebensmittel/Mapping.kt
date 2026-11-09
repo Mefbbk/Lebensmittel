@@ -40,6 +40,9 @@ object Mapping {
             i.price?.let { put("pr", it) }
             if (i.promo) put("pa", true)
             if (i.card) put("pc", true)
+            i.pfand?.let { put("pf", it) }
+            if (i.pfandReturn) put("rt", true)
+            if (withState && i.listId != MAIN_LIST) put("l", i.listId)
         }
 
     fun itemFromJson(o: JSONObject): ShopItem = ShopItem(
@@ -51,6 +54,9 @@ object Mapping {
         price = o.optNum("pr")?.takeIf { it >= 0 },
         promo = o.optBoolean("pa", false),
         card = o.optBoolean("pc", false),
+        pfand = o.optNum("pf")?.takeIf { it >= 0 },
+        pfandReturn = o.optBoolean("rt", false),
+        listId = o.optStr("l") ?: MAIN_LIST,
     )
 
     private fun savedPriceToJson(s: SavedPrice): JSONObject = JSONObject().apply {
@@ -94,6 +100,18 @@ object Mapping {
             days.put(date, arr)
         }
         put("days", days)
+        val lists = JSONObject()
+        for ((date, l) in d.dayLists) {
+            val arr = JSONArray()
+            l.forEach { dl ->
+                arr.put(JSONObject().apply {
+                    put("id", dl.id)
+                    dl.name?.let { put("n", it) }
+                })
+            }
+            lists.put(date, arr)
+        }
+        put("dayLists", lists)
         val known = JSONArray()
         for (k in d.known.values) {
             known.put(JSONObject().apply {
@@ -105,6 +123,7 @@ object Mapping {
                 k.unitPrice?.let { put("up", it) }
                 k.promoPrice?.let { put("pa", savedPriceToJson(it)) }
                 k.cardPrice?.let { put("pc", savedPriceToJson(it)) }
+                k.pfand?.let { put("pf", it) }
             })
         }
         put("known", known)
@@ -136,6 +155,7 @@ object Mapping {
                     unitPrice = ko.optNum("up")?.takeIf { it >= 0 },
                     promoPrice = savedPriceFromJson(ko.optJSONObject("pa")),
                     cardPrice = savedPriceFromJson(ko.optJSONObject("pc")),
+                    pfand = ko.optNum("pf")?.takeIf { it >= 0 },
                 )
             }
         }
@@ -165,6 +185,14 @@ object Mapping {
             }.orEmpty(),
             hiddenTabs = o.optJSONArray("hiddenTabs")?.let { arr ->
                 (0 until arr.length()).map { arr.optString(it) }.filter { it.isNotBlank() }.toSet()
+            }.orEmpty(),
+            dayLists = o.optJSONObject("dayLists")?.let { lj ->
+                lj.keys().asSequence().associateWith { date ->
+                    val arr = lj.optJSONArray(date)
+                    (0 until (arr?.length() ?: 0)).mapNotNull { i ->
+                        arr?.optJSONObject(i)?.let { DayList(it.optStr("id") ?: MAIN_LIST, it.optStr("n")) }
+                    }.distinctBy { it.id }
+                }.filterValues { it.isNotEmpty() }
             }.orEmpty(),
         )
     }

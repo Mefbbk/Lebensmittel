@@ -74,5 +74,7 @@ fun AppRoot(vm: AppViewModel) {
     }
 
     vm.pending?.let { QuantityDialog(vm, it) }
+    vm.pfandReturn?.let { PfandReturnDialog(vm, it) }
+    vm.unknownBarcode?.let { UnknownBarcodeDialog(vm, it) }
     vm.pendingImport?.let { ImportDialog(vm, it) }
 }
