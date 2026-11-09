@@ -4,6 +4,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+fun env(name: String): String? = providers.environmentVariable(name).orNull?.takeIf { it.isNotBlank() }
+
 android {
     namespace = "de.mef.lebensmittel"
     compileSdk = 35
@@ -12,14 +14,32 @@ android {
         applicationId = "de.mef.lebensmittel"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        // CI sets these from the git tag ("1.2.3" -> 10203); must grow so phones accept the update
+        versionCode = env("VERSION_CODE")?.toIntOrNull() ?: 1
+        versionName = env("VERSION_NAME") ?: "1.0"
+    }
+
+    // The app on the phone (release 1.0) is signed with the Android debug key of the dev PC.
+    // Updates keep the user's data only when signed with that same key, so CI gets it as a secret.
+    signingConfigs {
+        create("release") {
+            val ks = env("SIGNING_KEYSTORE")
+            if (ks != null) {
+                storeFile = file(ks)
+                storePassword = env("SIGNING_STORE_PASSWORD")
+                keyAlias = env("SIGNING_KEY_ALIAS")
+                keyPassword = env("SIGNING_KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            // locally (no SIGNING_KEYSTORE) the debug key is used, which is the same key on the dev PC
+            signingConfig = if (env("SIGNING_KEYSTORE") != null) signingConfigs.getByName("release")
+            else signingConfigs.getByName("debug")
         }
     }
     compileOptions {

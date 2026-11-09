@@ -1,0 +1,85 @@
+name: Release APK
+
+# Push a version tag to publish a release, e.g.:
+#   git tag 1.1 && git push origin 1.1
+on:
+  push:
+    tags: ["[0-9]*", "v[0-9]*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # SHA-256 of the key that signed the app already installed on the phone (release 1.0).
+      # An APK signed with another key cannot update it without deleting the app and its data.
+      EXPECTED_CERT_SHA256: 66c0cb441c970dc6fbe809c3f0ed0c9172d299baeb1fbd9891cfcb8068073995
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Version from tag
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          IFS=. read -r major minor patch <<< "$tag"
+          if ! [[ "$major" =~ ^[0-9]+$ && "${minor:-0}" =~ ^[0-9]+$ && "${patch:-0}" =~ ^[0-9]+$ ]]; then
+            echo "::error::Tag '$GITHUB_REF_NAME' is not a version like 1.2 or 1.2.3"
+            exit 1
+          fi
+          code=$(( major * 10000 + ${minor:-0} * 100 + ${patch:-0} ))
+          echo "VERSION_NAME=$tag" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=$code" >> "$GITHUB_ENV"
+          echo "Version $tag (code $code)"
+
+      - name: Restore signing key
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$SIGNING_KEYSTORE_BASE64" ]; then
+            echo "::error::Secret SIGNING_KEYSTORE_BASE64 is missing. Without the same key the phone cannot update the app."
+            exit 1
+          fi
+          echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/signing.keystore"
+          echo "SIGNING_KEYSTORE=$RUNNER_TEMP/signing.keystore" >> "$GITHUB_ENV"
+
+      - name: Build release APK
+        env:
+          # defaults are the standard Android debug-key values
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD || 'android' }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS || 'androiddebugkey' }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD || 'android' }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --stacktrace
+
+      - name: Check signature matches the installed app
+        run: |
+          apk=app/build/outputs/apk/release/app-release.apk
+          apksigner=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner
+          actual=$("$apksigner" verify --print-certs "$apk" | sed -n 's/.*certificate SHA-256 digest: //p' | head -1)
+          echo "Signed with $actual"
+          if [ "$actual" != "$EXPECTED_CERT_SHA256" ]; then
+            echo "::error::APK is signed with a different key; installing it would not update the app on the phone."
+            exit 1
+          fi
+          cp "$apk" "$RUNNER_TEMP/Lebensmittel.apk"
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "$RUNNER_TEMP/Lebensmittel.apk" \
+            --title "Lebensmittel $VERSION_NAME" \
+            --generate-notes
