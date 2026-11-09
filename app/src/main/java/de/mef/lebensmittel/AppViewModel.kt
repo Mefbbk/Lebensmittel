@@ -45,6 +45,12 @@ data class PendingAdd(
     /** Known price for 1 [unitPriceUnit]; the dialog uses it to suggest the price. */
     val unitPrice: Double? = null,
     val unitPriceUnit: QtyUnit? = null,
+    /** Last promo / customer-card prices; suggested when the matching box is ticked. */
+    val promoPrice: SavedPrice? = null,
+    val cardPrice: SavedPrice? = null,
+    /** Initial state of the "promo" / "card" boxes (when editing an item). */
+    val promo: Boolean = false,
+    val card: Boolean = false,
 )
 
 data class UiMessage(val id: Long, val text: String)
@@ -255,11 +261,15 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         pending = PendingAdd(
             date, withKnown(product), k?.lastAmount ?: 1.0, k?.lastUnit ?: QtyUnit.PCS,
             unitPrice = k?.unitPrice, unitPriceUnit = k?.lastUnit,
+            promoPrice = k?.promoPrice, cardPrice = k?.cardPrice,
         )
     }
 
     fun chooseKnown(date: LocalDate, k: KnownProduct) {
-        pending = PendingAdd(date, k.product, k.lastAmount, k.lastUnit, unitPrice = k.unitPrice, unitPriceUnit = k.lastUnit)
+        pending = PendingAdd(
+            date, k.product, k.lastAmount, k.lastUnit, unitPrice = k.unitPrice, unitPriceUnit = k.lastUnit,
+            promoPrice = k.promoPrice, cardPrice = k.cardPrice,
+        )
     }
 
     fun chooseOff(date: LocalDate, p: Product) {
@@ -288,20 +298,32 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun editItem(date: LocalDate, item: ShopItem) {
+        val k = store.data.value.known[item.product.key]
+        // the item's own price fills the slot of its kind, the other kinds come from what was remembered
+        val own = item.price?.let { SavedPrice(it / item.amount, item.unit) }
+        val special = item.promo || item.card
         pending = PendingAdd(
             date, item.product, item.amount, item.unit, editItemId = item.id,
-            unitPrice = item.price?.let { it / item.amount }, unitPriceUnit = item.unit,
+            unitPrice = if (special) k?.unitPrice else own?.perUnit,
+            unitPriceUnit = if (special) k?.lastUnit else item.unit,
+            promoPrice = if (item.promo && own != null) own else k?.promoPrice,
+            cardPrice = if (item.card && own != null) own else k?.cardPrice,
+            promo = item.promo,
+            card = item.card,
         )
     }
 
-    fun confirmPending(amount: Double, unit: QtyUnit, price: Double?) {
+    fun confirmPending(amount: Double, unit: QtyUnit, price: Double?, promo: Boolean = false, card: Boolean = false) {
         val p = pending ?: return
         if (p.editItemId != null) {
             store.items(p.date).firstOrNull { it.id == p.editItemId }?.let {
-                store.updateItem(p.date, it.copy(amount = amount, unit = unit, price = price))
+                store.updateItem(p.date, it.copy(amount = amount, unit = unit, price = price, promo = promo, card = card))
             }
         } else {
-            store.addItem(p.date, ShopItem(product = p.product, amount = amount, unit = unit, price = price))
+            store.addItem(
+                p.date,
+                ShopItem(product = p.product, amount = amount, unit = unit, price = price, promo = promo, card = card),
+            )
             if (p.product.barcode != null && p.product.barcode == pendingBarcode) pendingBarcode = null
             toast(T.added(p.product.name, "${formatNumber(amount)} ${unit.label}"))
             query = ""

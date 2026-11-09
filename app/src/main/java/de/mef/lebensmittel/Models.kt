@@ -63,9 +63,16 @@ data class ShopItem(
     val checked: Boolean = false,
     /** What this line costs in total (EUR), if the user entered it. */
     val price: Double? = null,
+    /** The price is a special offer (Aktion). */
+    val promo: Boolean = false,
+    /** The price is the one with the store's customer card (Lidl Plus, Payback …). */
+    val card: Boolean = false,
 ) {
     val amountLabel: String get() = "${formatNumber(amount)} ${unit.label}"
 }
+
+/** A remembered price for 1 [unit] (EUR). */
+data class SavedPrice(val perUnit: Double, val unit: QtyUnit)
 
 data class KnownProduct(
     val product: Product,
@@ -73,8 +80,12 @@ data class KnownProduct(
     val lastUnit: QtyUnit,
     val uses: Int,
     val lastUsed: Long,
-    /** Last known price for 1 [lastUnit] (EUR), used to pre-fill the price next time. */
+    /** Last known regular price for 1 [lastUnit] (EUR), used to pre-fill the price next time. */
     val unitPrice: Double? = null,
+    /** Last special-offer price; suggested when the "promo" box is ticked. */
+    val promoPrice: SavedPrice? = null,
+    /** Last customer-card price; suggested when the "card" box is ticked. */
+    val cardPrice: SavedPrice? = null,
 )
 
 data class AppData(

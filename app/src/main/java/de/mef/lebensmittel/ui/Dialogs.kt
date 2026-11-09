@@ -28,6 +28,7 @@ import de.mef.lebensmittel.Dates
 import de.mef.lebensmittel.Kcal
 import de.mef.lebensmittel.PendingAdd
 import de.mef.lebensmittel.QtyUnit
+import de.mef.lebensmittel.SavedPrice
 import de.mef.lebensmittel.ShareCodec
 import de.mef.lebensmittel.daysSorted
 import de.mef.lebensmittel.formatMoney
@@ -58,10 +59,20 @@ fun QuantityDialog(vm: AppViewModel, p: PendingAdd) {
     val editing = p.editItemId != null
 
     // Price: suggested from the last known price (scaled to the amount) until the user types one.
+    // With "promo" / "card" ticked the last promo / card price is suggested instead of the regular one.
     var priceTouched by remember(p) { mutableStateOf(false) }
     var priceText by remember(p) { mutableStateOf("") }
-    val autoPrice = if (!priceTouched && p.unitPrice != null && unit == p.unitPriceUnit && amount != null) {
-        p.unitPrice * amount
+    var promo by remember(p) { mutableStateOf(p.promo) }
+    var card by remember(p) { mutableStateOf(p.card) }
+    val regular = if (p.unitPrice != null && p.unitPriceUnit != null) SavedPrice(p.unitPrice, p.unitPriceUnit) else null
+    val suggested = when {
+        card && p.cardPrice != null -> p.cardPrice
+        promo && p.promoPrice != null -> p.promoPrice
+        promo || card -> null
+        else -> regular
+    }
+    val autoPrice = if (!priceTouched && suggested != null && unit == suggested.unit && amount != null) {
+        suggested.perUnit * amount
     } else {
         null
     }
@@ -163,12 +174,14 @@ fun QuantityDialog(vm: AppViewModel, p: PendingAdd) {
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 )
+                PriceKindBox(T.promoPrice(), promo, p.promoPrice) { promo = it }
+                PriceKindBox(T.cardPrice(), card, p.cardPrice) { card = it }
             }
         },
         confirmButton = {
             TextButton(
                 enabled = amount != null && !priceInvalid,
-                onClick = { amount?.let { vm.confirmPending(it, unit, price) } },
+                onClick = { amount?.let { vm.confirmPending(it, unit, price, promo, card) } },
             ) { Text(if (editing) T.save() else T.add()) }
         },
         dismissButton = {
@@ -183,6 +196,29 @@ fun QuantityDialog(vm: AppViewModel, p: PendingAdd) {
             }
         },
     )
+}
+
+/** "☑ Promo price" with the last price of that kind under it, so the user sees what it was before. */
+@Composable
+private fun PriceKindBox(label: String, checked: Boolean, last: SavedPrice?, onChange: (Boolean) -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clickable { onChange(!checked) },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Checkbox(checked = checked, onCheckedChange = onChange)
+        Column {
+            Text(label, style = MaterialTheme.typography.bodyLarge)
+            last?.let {
+                Text(
+                    T.lastPriceWas(formatMoney(it.perUnit), it.unit.label),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
 }
 
 /** Shown when a shared list arrives (link, "Share" from a messenger, or clipboard). */

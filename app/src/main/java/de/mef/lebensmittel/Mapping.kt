@@ -38,6 +38,8 @@ object Mapping {
             put("un", i.unit.code)
             if (withState && i.checked) put("x", true)
             i.price?.let { put("pr", it) }
+            if (i.promo) put("pa", true)
+            if (i.card) put("pc", true)
         }
 
     fun itemFromJson(o: JSONObject): ShopItem = ShopItem(
@@ -47,7 +49,17 @@ object Mapping {
         unit = QtyUnit.fromCode(o.optStr("un")),
         checked = o.optBoolean("x", false),
         price = o.optNum("pr")?.takeIf { it >= 0 },
+        promo = o.optBoolean("pa", false),
+        card = o.optBoolean("pc", false),
     )
+
+    private fun savedPriceToJson(s: SavedPrice): JSONObject = JSONObject().apply {
+        put("v", s.perUnit)
+        put("un", s.unit.code)
+    }
+
+    private fun savedPriceFromJson(o: JSONObject?): SavedPrice? =
+        o?.optNum("v")?.takeIf { it >= 0 }?.let { SavedPrice(it, QtyUnit.fromCode(o.optStr("un"))) }
 
     fun dataToJson(d: AppData): JSONObject = JSONObject().apply {
         put("version", 1)
@@ -91,6 +103,8 @@ object Mapping {
                 put("uses", k.uses)
                 put("t", k.lastUsed)
                 k.unitPrice?.let { put("up", it) }
+                k.promoPrice?.let { put("pa", savedPriceToJson(it)) }
+                k.cardPrice?.let { put("pc", savedPriceToJson(it)) }
             })
         }
         put("known", known)
@@ -120,6 +134,8 @@ object Mapping {
                     uses = ko.optInt("uses", 1),
                     lastUsed = ko.optLong("t", 0L),
                     unitPrice = ko.optNum("up")?.takeIf { it >= 0 },
+                    promoPrice = savedPriceFromJson(ko.optJSONObject("pa")),
+                    cardPrice = savedPriceFromJson(ko.optJSONObject("pc")),
                 )
             }
         }

@@ -239,10 +239,18 @@ private fun ItemRow(item: ShopItem, settings: AppData, onToggle: () -> Unit, onE
             item.price?.let {
                 Text(formatMoney(it), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+            priceKindLabel(item)?.let {
+                Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
+            }
         }
         IconButton(onClick = onEdit) { Icon(Icons.Filled.Edit, contentDescription = T.editQtyPrice()) }
     }
 }
+
+/** "акція · карта" for promo / customer-card prices, null for a regular price. */
+private fun priceKindLabel(item: ShopItem): String? =
+    listOfNotNull(T.promoBadge().takeIf { item.promo }, T.cardBadge().takeIf { item.card })
+        .joinToString(" · ").ifBlank { null }
 
 private fun kcalLine(item: ShopItem): String? {
     val per = Kcal.per100Label(item.product) ?: return null

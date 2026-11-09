@@ -53,7 +53,10 @@ class Store(private val file: File) {
     fun addItem(date: LocalDate, item: ShopItem) = update { d ->
         d.withDay(date) { list ->
             // same product already on the list and not bought yet -> add up if units match
-            val idx = list.indexOfFirst { it.product.key == item.product.key && !it.checked && it.unit == item.unit }
+            val idx = list.indexOfFirst {
+                it.product.key == item.product.key && !it.checked && it.unit == item.unit &&
+                    it.promo == item.promo && it.card == item.card
+            }
             if (idx >= 0) {
                 list.toMutableList().also {
                     val old = it[idx]
@@ -63,12 +66,12 @@ class Store(private val file: File) {
             } else {
                 list + item
             }
-        }.remember(item.product, item.amount, item.unit, item.price)
+        }.remember(item)
     }
 
     fun updateItem(date: LocalDate, item: ShopItem) = update { d ->
         d.withDay(date) { list -> list.map { if (it.id == item.id) item else it } }
-            .remember(item.product, item.amount, item.unit, item.price, countUse = false)
+            .remember(item, countUse = false)
     }
 
     fun removeItem(date: LocalDate, id: String) = update { d -> d.withDay(date) { list -> list.filterNot { it.id == id } } }
@@ -86,7 +89,7 @@ class Store(private val file: File) {
         if (items.isEmpty()) return 0
         update { d ->
             var acc = d.withDay(to) { list -> list + items.map { it.copy(id = newId(), checked = false) } }
-            for (i in items) acc = acc.remember(i.product, i.amount, i.unit, i.price, countUse = false)
+            for (i in items) acc = acc.remember(i, countUse = false)
             acc
         }
         return items.size
@@ -102,13 +105,11 @@ class Store(private val file: File) {
 
     // ---------- remembered products ----------
 
-    private fun AppData.remember(
-        p: Product,
-        amount: Double,
-        unit: QtyUnit,
-        price: Double?,
-        countUse: Boolean = true,
-    ): AppData {
+    private fun AppData.remember(item: ShopItem, countUse: Boolean = true): AppData {
+        val p = item.product
+        val amount = item.amount
+        val unit = item.unit
+        val perUnit = item.price?.takeIf { amount > 0 }?.let { it / amount }
         val old = known[p.key]
         val merged = if (old == null) p else p.copy(
             nameUk = p.nameUk ?: old.product.nameUk,
@@ -124,8 +125,11 @@ class Store(private val file: File) {
             lastUnit = unit,
             uses = (old?.uses ?: 0) + if (countUse || old == null) 1 else 0,
             lastUsed = System.currentTimeMillis(),
-            unitPrice = if (price != null && amount > 0) price / amount
+            // a promo / card price must not replace the regular one
+            unitPrice = if (perUnit != null && !item.promo && !item.card) perUnit
             else old?.unitPrice?.takeIf { old.lastUnit == unit },
+            promoPrice = if (perUnit != null && item.promo) SavedPrice(perUnit, unit) else old?.promoPrice,
+            cardPrice = if (perUnit != null && item.card) SavedPrice(perUnit, unit) else old?.cardPrice,
         )
         return copy(known = known + (p.key to kp))
     }
